@@ -7,16 +7,20 @@
 
 # Site settings
 title: Pandolia的博客
-email: pandolia@yeah.net
 description: > # this means to ignore newlines until "baseurl:"
-  Pandolia的博客
-baseurl: "" # the subpath of your site, e.g. /blog
-url: "http://pandolia.github.io" # the base hostname & protocol for your site
+  编程 算法 汇编 静态博客
+baseurl:  # the subpath of your site, e.g. /blog
 github_username:  pandolia
 
-# Build settings
-markdown: kramdown
-
 # customer global variable
-jianshu: "http://www.jianshu.com/users/46fd9a28f80c/latest_articles"
-sourcecode: "https://github.com/pandolia/pandolia.github.io"
+navigation:
+- text: 主页
+  url: /
+- text: 书签
+  url: /bookmark.html
+- text: TinyC
+  url: http://pandolia.net/tinyc
+- text: 简书
+  url: http://www.jianshu.com/users/46fd9a28f80c/latest_articles
+- text: 本站源码
+  url: https://github.com/pandolia/pandolia.github.io

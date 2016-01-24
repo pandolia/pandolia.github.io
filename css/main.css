@@ -464,3 +464,7 @@ pre {
     color: #008080; }
   .highlight .il {
     color: #099; }
+
+.navbar ul{list-style:none;}
+.navbar li{float:left;}
+.navbar a{font-size:15px;}
