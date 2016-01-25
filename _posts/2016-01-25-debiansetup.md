@@ -4,11 +4,11 @@ title: Debian安装方法
 category: 笔记
 ---
 
-（1） 在Vitualbox中安装Debian8（xfce）
+#### 1. 在Vitualbox中安装Debian8（xfce）
 
 <https://mralphaville.wordpress.com/2015/05/01/how-to-install-debian-8-jessie-as-a-virtual-machine>
 
-（2） 在Windows下通过U盘安装Debian 7.0 Wheezy
+#### 2. 在Windows下通过U盘安装Debian 7.0 Wheezy
 
 首先通过 <http://www.debian.org/distrib/netinst>, 在 Tiny CDs, USB sticks, etc. 下面, 找到对应的下载列表, 例如我用的是x86 64bit, 则选择的是<http://ftp.nl.debian.org/debian/dists/wheezy/main/installer-amd64/current/images>点击左侧列表里的 hd-media , 下载其中的boot.img.gz, 其他的都不用下。
 
@@ -19,7 +19,7 @@ category: 笔记
 
 然后将电脑设置为U盘启动, 就可以看到Debian的安装界面了。
 
-（3） 用Grub通过硬盘安装Debian8.2.0
+#### 3. 用Grub通过硬盘安装Debian8.2.0
 
 电脑中已经安装了Win7和Debian7双系统，用Grub启动。则可以用Grub从硬盘安装Debian8。
 
