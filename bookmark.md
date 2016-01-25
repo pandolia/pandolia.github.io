@@ -8,6 +8,7 @@ layout: default
 - Github <https://github.com>
 - Stackoverflow  <http://stackoverflow.com>
 - Vscode  <https://code.visualstudio.com>
+- Linux.cn  <https://linux.cn>
 - TinyC  <http://pandolia.net/tinyc>
 
 ### Markdown
