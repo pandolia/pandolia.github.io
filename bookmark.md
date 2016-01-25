@@ -7,6 +7,7 @@ layout: default
 - 维基  <https://en.wikipedia.org>
 - Github <https://github.com>
 - Stackoverflow  <http://stackoverflow.com>
+- Vscode  <https://code.visualstudio.com>
 - TinyC  <http://pandolia.net/tinyc>
 
 ### Markdown
