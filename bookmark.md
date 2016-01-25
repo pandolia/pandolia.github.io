@@ -9,6 +9,7 @@ layout: default
 - Stackoverflow  <http://stackoverflow.com>
 - Vscode  <https://code.visualstudio.com>
 - Linux.cn  <https://linux.cn>
+- FreeCodeCamp  <http://www.freecodecamp.com>
 - TinyC  <http://pandolia.net/tinyc>
 
 ### Markdown
