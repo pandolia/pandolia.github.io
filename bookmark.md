@@ -11,6 +11,7 @@ layout: default
 - Vscode  <https://code.visualstudio.com>
 - Linux.cn  <https://linux.cn>
 - FreeCodeCamp  <http://www.freecodecamp.com>
+- Go中文版 <http://golang-china.github.io/gopl-zh>
 - TinyC  <http://pandolia.net/tinyc>
 
 ### Markdown
