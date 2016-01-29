@@ -14,6 +14,9 @@ layout: default
 - Go中文版 <http://golang-china.github.io/gopl-zh>
 - TinyC  <http://pandolia.net/tinyc>
 
+### 阅读
+- [How to make an Operating System](https://samypesse.gitbooks.io/how-to-create-an-operating-system)
+
 ### Markdown
 - Markable  <https://markable.in>
 - Atom  <https://atom.io>
