@@ -6,7 +6,7 @@ category: 笔记
 
 ### 1. 在Vitualbox中安装Debian8（xfce）
 
-见[mralphaville的Blog](https://mralphaville.wordpress.com/2015/05/01/how-to-install-debian-8-jessie-as-a-virtual-machine)。
+见 [mralphaville的Blog](https://mralphaville.wordpress.com/2015/05/01/how-to-install-debian-8-jessie-as-a-virtual-machine) 。
 
 ### 2. 在Windows下通过U盘安装Debian 7.0 Wheezy
 
