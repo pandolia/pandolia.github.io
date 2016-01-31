@@ -14,8 +14,9 @@ layout: default
 - Go中文版 <http://golang-china.github.io/gopl-zh>
 - TinyC  <http://pandolia.net/tinyc>
 
-### 阅读
+### 资料
 - [How to make an Operating System](https://samypesse.gitbooks.io/how-to-create-an-operating-system)
+- [Markdown Syntax Cheat Sheet](https://markable.in/file/aa191728-9dc7-11e1-91c7-984be164924a.html)
 
 ### Markdown
 - Markable  <https://markable.in>
