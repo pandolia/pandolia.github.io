@@ -6,7 +6,7 @@ category: 文章
 
 **0. 说明**
 
-本博客采用 [jekyll](http://jekyllrb.com/) 生成，托管在 [github](http://github.com) 上，网址为： <http://pandolia.github.io>，源码点 [这里](https://github.com/pandolia/pandolia.github.io) 。本博客的使用需要用到一点点`git`的知识，建议先学习一下 **git** 的使用方法，推荐 [廖雪峰的git教程](http://www.liaoxuefeng.com/wiki/0013739516305929606dd18361248578c67b8067c8c017b000) 。如果只是想写博客，也可以先不学，只使用本文后面提供的简单的命令。本站源码使用方法如下。
+本博客采用 [jekyll](http://jekyllrb.com/) 生成，托管在 [github](http://github.com) 上，网址为： <http://pandolia.github.io>，源码点 [这里](https://github.com/pandolia/pandolia.github.io) 。本博客的使用需要用到一点点`git`的知识，建议先学习一下 **git** 的使用方法，推荐 [廖雪峰的git教程](http://www.liaoxuefeng.com/wiki/0013739516305929606dd18361248578c67b8067c8c017b000) 以及 [Scott Chacon 和 Ben Straub 的Git详解](http://git-scm.com/book/zh/v2) 。如果只是想写博客，也可以先不学，只使用本文后面提供的简单的命令。本站源码使用方法如下。
 
 **1. 安装git，注册github帐号，新建博客仓库**
 
