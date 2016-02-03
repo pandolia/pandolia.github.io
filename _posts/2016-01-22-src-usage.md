@@ -4,11 +4,11 @@ layout: post
 category: 文章
 ---
 
-**0. 说明**
+#### 0. 说明
 
 本博客采用 [jekyll](http://jekyllrb.com/) 生成，托管在 [github](http://github.com) 上，网址为： <http://pandolia.github.io>，源码点 [这里](https://github.com/pandolia/pandolia.github.io) 。本博客的使用需要用到一点点`git`的知识，建议先学习一下 **git** 的使用方法，推荐 [廖雪峰的git教程](http://www.liaoxuefeng.com/wiki/0013739516305929606dd18361248578c67b8067c8c017b000) 以及 [Scott Chacon 和 Ben Straub 的Git详解](http://git-scm.com/book/zh/v2) 。如果只是想写博客，也可以先不学，只使用本文后面提供的简单的命令。本站源码使用方法如下。
 
-**1. 安装git，注册github帐号，新建博客仓库**
+#### 1. 安装git，注册github帐号，新建博客仓库
 
 Windows用户可到 [git](http://git-scm.com/) 网站下载安装文件安装，Linux（Debian或Ubuntu）用户可用`sudo apt-get install git`命令安装。
 
@@ -16,7 +16,7 @@ Windows用户可到 [git](http://git-scm.com/) 网站下载安装文件安装，
 
 注册完成且登陆后重新打开 [github](http://github.com) ，可在主页上的右下方找到一个绿色的`+ New repositories`的按钮，点击新建一个仓库（  **repositories** ），仓库名为 `username.github.io`，注意将 **username** 替换成你的用户名。
 
-**2. 上传博客网站代码**
+#### 2. 上传博客网站代码
 
 博客仓库`username.github.io`建立好后，博客地址就是 <http://username.github.io> ，但现在还不能访问，因为我们尚未上传任何的网页代码。
 
@@ -34,7 +34,7 @@ Windows用户可到 [git](http://git-scm.com/) 网站下载安装文件安装，
 
 现在就可以在浏览器中打开 <http://username.github.io> 了。
 
-**3. 配置博客**
+#### 3. 配置博客
 
 配置博客非常简单，打开`_config.yml`文件，内容如下：
 
@@ -66,7 +66,7 @@ Windows用户可到 [git](http://git-scm.com/) 网站下载安装文件安装，
 
 之后再刷新一下浏览器就可以看到修改后的博客了。
 
-**4. 写博客文章**
+#### 4. 写博客文章
 
 写博客文章也很简单，用 **markdown** 格式写好博文后，按`2016-01-31-filename.md`格式的文件名，保存到 **_post** 文件夹，再输入以下命令上传就可以了：
 
