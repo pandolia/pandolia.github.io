@@ -17,6 +17,7 @@ layout: default
 ### 资料
 - [How to make an Operating System](https://samypesse.gitbooks.io/how-to-create-an-operating-system)
 - [Markdown Syntax Cheat Sheet](https://markable.in/file/aa191728-9dc7-11e1-91c7-984be164924a.html)
+- [Git Cheat Sheet](https://training.github.com/kit/downloads/github-git-cheat-sheet.pdf)
 
 ### Markdown
 - Markable  <https://markable.in>
