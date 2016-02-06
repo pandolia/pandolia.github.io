@@ -4,11 +4,12 @@ title: Debian安装方法
 category: 笔记
 ---
 
-### 1. 在Vitualbox中安装Debian8（xfce）
+### 1. 安装系统
+**（1） 在Vitualbox中安装Debian8（xfce）**
 
 见 [mralphaville的Blog](https://mralphaville.wordpress.com/2015/05/01/how-to-install-debian-8-jessie-as-a-virtual-machine) 。
 
-### 2. 在Windows下通过U盘安装Debian 7.0 Wheezy
+**（2） 在Windows下通过U盘安装Debian 7.0 Wheezy**
 
 首先通过 <http://www.debian.org/distrib/netinst>, 在 Tiny CDs, USB sticks, etc. 下面, 找到对应的下载列表, 如x86-64bit, 则选择：<http://ftp.nl.debian.org/debian/dists/wheezy/main/installer-amd64/current/images> 点击左侧列表里的 hd-media , 下载其中的boot.img.gz, 其他的都不用下。
 
@@ -20,7 +21,7 @@ category: 笔记
 
 然后将电脑设置为U盘启动, 就可以看到Debian的安装界面了。
 
-### 3. 用Grub通过硬盘安装Debian8.2.0
+**（3） 用Grub通过硬盘安装Debian8.2.0**
 
 电脑中已经安装了Win7和Debian7双系统，用Grub启动。则可以用Grub从硬盘安装Debian8。
 
@@ -40,3 +41,19 @@ category: 笔记
 `grub.cfg`文件修改完毕保存，重启电脑就可以看到Grub启动菜单中多了一个`Debian DVD 8.2.0`的启动项了，进入这个启动项就开始安装Debian8了。这里千万要注意不能将Debian安装到镜像iso文件所在的分区上，否则已安装的系统都会挂掉。
 
 `grub.cfg`文件中的`linux (hd0,msdos5)/vmlinuz`和`initrd (hd0,msdos5)/initrd.gz`命令指定了内核引导程序文件所在的位置，Grub会加载这两个文件中的引导程序，之后引导程序会在硬盘的所有FAT32和EXT分区中搜索安装镜像iso文件，搜索到合法的安装镜像文件后会自动启动iso文件开始安装。
+
+### 2. 常用软件安装
+配置源：
+
+    nano /etc/apt/sources.list
+        deb http://ftp.cn.debian.org/debian jessie-backports main
+        deb http://http.debian.net/debian/ jessie main contrib non-free
+    apt-get update
+
+中文输入：
+
+    apt-get install ibus ibus-pinyin ibus-googlepinyin ibus-pinyin ibus-sunpinyin
+
+C、汇编开发工具：
+
+    apt-get install build-essential gdb nasm
