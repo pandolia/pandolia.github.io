@@ -80,8 +80,7 @@ ruby和jekyll安装：
 
 lantern 安装：
 
-    $ apt-get install libappindicator1
-    $ apt-get install libappindicator3-1
+    $ apt-get install libappindicator1 libappindicator3-1
     $ dpkg -i google-chrome-stable_current_amd64.deb
 
 其中 **google-chrome-stable_current_amd64.deb** 需要到[ lantern 官网下载](https://getlantern.org)。 **gnome** 下用 **chrome** 和 **iceweasel** 都可以连外网，但在 **xfce** 下却无法使用 **chrome** 连接，但系统自带的 **iceweasel** 是可以用的。
