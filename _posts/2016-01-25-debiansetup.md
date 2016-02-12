@@ -45,18 +45,44 @@ category: 笔记
 ### 2. 常用软件安装
 配置源：
 
-    nano /etc/apt/sources.list
-        deb http://ftp.cn.debian.org/debian jessie-backports main
-        deb http://http.debian.net/debian/ jessie main contrib non-free
-    apt-get update
+    $ nano /etc/apt/sources.list
+    ... # only two line:
+    deb http://ftp.cn.debian.org/debian jessie-backports main
+    deb http://http.debian.net/debian/ jessie main contrib non-free
+    $ apt-get update
 
 中文输入：
 
-    apt-get install ibus ibus-pinyin ibus-googlepinyin ibus-pinyin ibus-sunpinyin
+    $ apt-get install ibus ibus-sunpinyin
+    $ nano ~/.bashrc
+    ... # 添加以下命令:
+    export GTK_IM_MODULE=ibus
+    export XMODIFIERS=@im=ibus
+    export QT_IM_MODULE=ibus
+
+之后需要设置输入法切换快捷键， **xfce** 下可以很快找到输入法管理程序，但 **gnome** 下藏的很隐蔽，在 settings --> keyboard --> typing -- input source 里面设置。
 
 C、汇编开发工具：
 
     apt-get install build-essential gdb nasm
+
+ruby和jekyll安装：
+
+    $ apt-get install ruby ruby-dev
+    $ gem sources --remove https://rubygems.org/
+    $ gem sources -a http://ruby.taobao.org/
+    $ gem sources -l
+    *** CURRENT SOURCES ***
+    http://ruby.taobao.org
+    # 请确保只有 ruby.taobao.org
+    $ gem install jekyll
+
+lantern 安装：
+
+    $ apt-get install libappindicator1 libappindicator3-1
+    $ dpkg -i google-chrome-stable_current_amd64.deb
+
+其中 **google-chrome-stable_current_amd64.deb** 需要到[ lantern 官网下载](https://getlantern.org)。 **gnome** 下用 **chrome** 和 **iceweasel** 都可以连外网；但在 **xfce** 下却无法使用 **chrome** 连接，好在系统自带的 **iceweasel** 是可以用的。
 
 ### 3. 系统设置
 设置时区：`dpkg-reconfigure tzdata`，设置时间：`date -s 20160212; date -s 21:24:06`。
