@@ -57,3 +57,6 @@ category: 笔记
 C、汇编开发工具：
 
     apt-get install build-essential gdb nasm
+
+### 3. 系统设置
+设置时区：`dpkg-reconfigure tzdata`，设置时间：`date -s 20160212; date -s 21:24:06`。
