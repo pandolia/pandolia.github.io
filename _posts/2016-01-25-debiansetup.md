@@ -46,7 +46,7 @@ category: 笔记
 配置源：
 
     $ nano /etc/apt/sources.list
-    ... # only two line:
+    ... # 只保留以下两行:
     deb http://ftp.cn.debian.org/debian jessie-backports main
     deb http://http.debian.net/debian/ jessie main contrib non-free
     $ apt-get update
@@ -60,7 +60,7 @@ category: 笔记
     export XMODIFIERS=@im=ibus
     export QT_IM_MODULE=ibus
 
-之后需要设置输入法切换快捷键， **xfce** 下可以很快找到输入法管理程序，但 **gnome** 下藏的很隐蔽，在 settings --> keyboard --> typing -- input source 里面设置。
+之后需要设置输入法切换快捷键， **xfce** 下可以很快找到输入法管理程序，但 **gnome** 下藏的很隐蔽，在 settings --> keyboard --> typing --> input source 里面设置。
 
 C、汇编开发工具：
 
@@ -76,6 +76,11 @@ ruby和jekyll安装：
     http://ruby.taobao.org
     # 请确保只有 ruby.taobao.org
     $ gem install jekyll
+
+iceweasel 的 flash player 插件安装：
+
+    $ apt-get install flashplugin-nonfree   # 安装
+    $ update-flashplugin-nonfree --install  # 更新
 
 lantern 安装：
 
