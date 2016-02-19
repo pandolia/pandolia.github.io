@@ -4,7 +4,7 @@ title: Debian安装和使用
 category: 笔记
 ---
 
-### 1. 安装系统
+### 1. 系统安装
 **（1） 在Vitualbox中安装Debian8（xfce）**
 
 见 [mralphaville的Blog](https://mralphaville.wordpress.com/2015/05/01/how-to-install-debian-8-jessie-as-a-virtual-machine) 。
@@ -42,7 +42,7 @@ category: 笔记
 
 `grub.cfg`文件中的`linux (hd0,msdos5)/vmlinuz`和`initrd (hd0,msdos5)/initrd.gz`命令指定了内核引导程序文件所在的位置，Grub会加载这两个文件中的引导程序，之后引导程序会在硬盘的所有FAT32和EXT分区中搜索安装镜像iso文件，搜索到合法的安装镜像文件后会自动启动iso文件开始安装。
 
-### 2. 常用软件安装
+### 2. 软件安装及配置
 **配置源：**
 
     $ nano /etc/apt/sources.list
@@ -92,5 +92,13 @@ category: 笔记
 
 其中 **google-chrome-stable_current_amd64.deb** 需要到[ lantern 官网](https://github.com/getlantern/lantern)下载。 **gnome** 下用 **chrome** 和 **iceweasel** 都可以连外网；但在 **xfce** 下却无法使用 **chrome** 连接，好在系统自带的 **iceweasel** 是可以用的。
 
-### 3. 系统设置
+**VirtualBox增强功能安装**
+
+    $ uname -a
+    $ apt-get install linux-headers-3.16.0-4-amd64   # linux-headers的版本根据 uname 命令得到
+    $ sh ./VBoxLinuxAdditions.run                    # 先 cd 到 VBoxLinuxAdditions 的光盘目录
+    $ usermod -a -G vboxsf yourname                  # 把 yourname 增加到 vboxsf 组中，这样 yourname 用户也能使用共享文件夹了
+
+**时区和时间设置**
+
 设置时区：`dpkg-reconfigure tzdata`，设置时间：`date -s 20160212; date -s 21:24:06`。
