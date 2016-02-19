@@ -43,7 +43,7 @@ category: 笔记
 `grub.cfg`文件中的`linux (hd0,msdos5)/vmlinuz`和`initrd (hd0,msdos5)/initrd.gz`命令指定了内核引导程序文件所在的位置，Grub会加载这两个文件中的引导程序，之后引导程序会在硬盘的所有FAT32和EXT分区中搜索安装镜像iso文件，搜索到合法的安装镜像文件后会自动启动iso文件开始安装。
 
 ### 2. 常用软件安装
-配置源：
+**配置源：**
 
     $ nano /etc/apt/sources.list
     ... # 只保留以下两行:
@@ -51,7 +51,7 @@ category: 笔记
     deb http://http.debian.net/debian/ jessie main contrib non-free
     $ apt-get update
 
-中文输入：
+**中文输入：**
 
     $ apt-get install ibus ibus-sunpinyin
     $ nano ~/.bashrc
@@ -62,14 +62,14 @@ category: 笔记
 
 之后需要设置输入法切换快捷键， **xfce** 下可以很快找到输入法管理程序，但 **gnome** 下藏的很隐蔽，在 settings --> keyboard --> typing --> input source 里面设置。
 
-开发工具：
+**开发工具：**
 
     aptitude install build-essential
     apt-get install git gdb nasm
 
 注意安装 **build-essential** 时，由于系统自带的 **libc** 包和源中的版本不一致，会导致冲突，必须使用 **aptitude** 命令安装，安装过程中根据提示对 **libc** 进行 **downgrade** ，之后才能正常安装。
 
-ruby和jekyll安装：
+**ruby和jekyll安装：**
 
     $ apt-get install ruby ruby-dev
     $ gem sources --remove https://rubygems.org/
@@ -80,17 +80,17 @@ ruby和jekyll安装：
     # 请确保只有 ruby.taobao.org
     $ gem install jekyll
 
-iceweasel 的 flash player 插件安装：
+**iceweasel 的 flash player 插件安装：**
 
     $ apt-get install flashplugin-nonfree   # 安装
     $ update-flashplugin-nonfree --install  # 更新
 
-lantern 安装：
+**lantern 安装：**
 
     $ apt-get install libappindicator1 libappindicator3-1
     $ dpkg -i google-chrome-stable_current_amd64.deb
 
-其中 **google-chrome-stable_current_amd64.deb** 需要到[ lantern 官网下载](https://github.com/getlantern/lantern)。 **gnome** 下用 **chrome** 和 **iceweasel** 都可以连外网；但在 **xfce** 下却无法使用 **chrome** 连接，好在系统自带的 **iceweasel** 是可以用的。
+其中 **google-chrome-stable_current_amd64.deb** 需要到[ lantern 官网](https://github.com/getlantern/lantern)下载。 **gnome** 下用 **chrome** 和 **iceweasel** 都可以连外网；但在 **xfce** 下却无法使用 **chrome** 连接，好在系统自带的 **iceweasel** 是可以用的。
 
 ### 3. 系统设置
 设置时区：`dpkg-reconfigure tzdata`，设置时间：`date -s 20160212; date -s 21:24:06`。
