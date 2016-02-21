@@ -66,6 +66,10 @@ category: 笔记
 
     aptitude install build-essential
     apt-get install git gdb nasm
+    apt-get install python-dev
+    apt-get install python-pip
+    apt-get install mysql-server
+    pip install mysql-connector-python
 
 注意安装 **build-essential** 时，由于系统自带的 **libc** 包和源中的版本不一致，会导致冲突，必须使用 **aptitude** 命令安装，安装过程中根据提示对 **libc** 进行 **downgrade** ，之后才能正常安装。
 
