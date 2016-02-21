@@ -13,11 +13,15 @@ layout: default
 - FreeCodeCamp  <http://www.freecodecamp.com>
 - Go中文版 <http://golang-china.github.io/gopl-zh>
 - TinyC  <http://pandolia.net/tinyc>
+- Real python <https://realpython.com>
+- Gnu ocrad <https://www.gnu.org/software/ocrad>
+- Ringzer Challenges <https://ringzer0team.com>
 
 ### 资料
 - [How to make an Operating System](https://samypesse.gitbooks.io/how-to-create-an-operating-system)
 - [Markdown Syntax Cheat Sheet](https://markable.in/file/aa191728-9dc7-11e1-91c7-984be164924a.html)
 - [Git Cheat Sheet](https://training.github.com/kit/downloads/github-git-cheat-sheet.pdf)
+- [Setting up a simple ocr server in python](https://realpython.com/blog/python/setting-up-a-simple-ocr-server)
 
 ### Markdown
 - Markable  <https://markable.in>
