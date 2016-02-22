@@ -72,6 +72,8 @@ category: 笔记
     git clone https://github.com/mysql/mysql-connector-python.git
     cd mysql-connector-python
     python setup.py install
+    apt-get install apeche2
+    apt-get install php5 php5-mysql
 
 注意安装 **build-essential** 时，由于系统自带的 **libc** 包和源中的版本不一致，会导致冲突，必须使用 **aptitude** 命令安装，安装过程中根据提示对 **libc** 进行 **downgrade** ，之后才能正常安装。
 
