@@ -45,11 +45,20 @@ category: 笔记
 ### 2. 软件安装及配置
 **配置源：**
 
+    $ su
     $ nano /etc/apt/sources.list
     ... # 只保留以下两行:
     deb http://ftp.cn.debian.org/debian jessie-backports main
     deb http://http.debian.net/debian/ jessie main contrib non-free
     $ apt-get update
+
+**将普通用户加入sudo用户组：**
+
+    $ apt-get install sudo
+    $ chmod +w /etc/sudoers
+    $ nano /etc/sudoers
+    ... # 在 root   ALL=(ALL:ALL) ALL 的后面加入：
+    user    ALL=(ALL:ALL) ALL
 
 **中文输入：**
 
@@ -64,16 +73,19 @@ category: 笔记
 
 **开发工具：**
 
-    aptitude install build-essential
-    apt-get install git gdb nasm
-    apt-get install python-dev
-    apt-get install python-pip
-    apt-get install mysql-server
-    git clone https://github.com/mysql/mysql-connector-python.git
-    cd mysql-connector-python
-    python setup.py install
-    apt-get install apeche2
-    apt-get install php5 php5-mysql
+    $ aptitude install build-essential
+    $ apt-get install git gdb nasm
+    $ apt-get install python-dev
+    $ apt-get install python-pip
+    $ apt-get install mysql-server
+    $ git clone https://github.com/mysql/mysql-connector-python.git
+    $ cd mysql-connector-python
+    $ python setup.py install
+    $ apt-get install apache2
+    $ apt-get install php5 php5-mysql
+    $ chmod 777 /var/www/html
+    $ /etc/init.d/apache2 -k restart
+    
 
 注意安装 **build-essential** 时，由于系统自带的 **libc** 包和源中的版本不一致，会导致冲突，必须使用 **aptitude** 命令安装，安装过程中根据提示对 **libc** 进行 **downgrade** ，之后才能正常安装。
 
@@ -100,7 +112,7 @@ category: 笔记
 
 其中 **google-chrome-stable_current_amd64.deb** 需要到[ lantern 官网](https://github.com/getlantern/lantern)下载。 **gnome** 下用 **chrome** 和 **iceweasel** 都可以连外网；但在 **xfce** 下却无法使用 **chrome** 连接，好在系统自带的 **iceweasel** 是可以用的。
 
-**VirtualBox增强功能安装**
+**VirtualBox增强功能安装（虚拟机）**
 
     $ uname -a
     $ apt-get install linux-headers-3.16.0-4-amd64   # linux-headers的版本根据 uname 命令得到
