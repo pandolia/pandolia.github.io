@@ -74,9 +74,10 @@ category: 笔记
 **开发工具：**
 
     $ aptitude install build-essential
-    $ apt-get install git gdb nasm
+    $ apt-get install git gdb nasm cmake
     $ apt-get install python-dev
     $ apt-get install python-pip
+    $ apt-get install spyder qtcreator
     $ apt-get install mysql-server
     $ git clone https://github.com/mysql/mysql-connector-python.git
     $ cd mysql-connector-python
