@@ -78,6 +78,7 @@ category: 笔记
     $ apt-get install python-dev
     $ apt-get install python-pip
     $ apt-get install spyder qtcreator
+    $ apt-get install openssl libssl-dev
     $ apt-get install mysql-server
     $ git clone https://github.com/mysql/mysql-connector-python.git
     $ cd mysql-connector-python
