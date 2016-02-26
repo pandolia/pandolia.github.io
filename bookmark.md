@@ -18,6 +18,7 @@ layout: default
 - Ringzer Challenges <https://ringzer0team.com>
 - Hash toolkit <http://hashtoolkit.com>
 - Springer scientific documents searching <http://link.springer.com>
+- Free It eBooks <https://ebooks-it.org>
 
 ### 资料
 - [How to make an Operating System](https://samypesse.gitbooks.io/how-to-create-an-operating-system)
