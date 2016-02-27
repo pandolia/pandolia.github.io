@@ -26,6 +26,7 @@ layout: default
 - [Markdown Syntax Cheat Sheet](https://markable.in/file/aa191728-9dc7-11e1-91c7-984be164924a.html)
 - [Git Cheat Sheet](https://training.github.com/kit/downloads/github-git-cheat-sheet.pdf)
 - [Setting up a simple ocr server in python](https://realpython.com/blog/python/setting-up-a-simple-ocr-server)
+- [IBM Linux socket 编程] (http://www.ibm.com/developerworks/cn/education/linux/l-sock/l-sock.html)
 
 ### Markdown
 - Markable  <https://markable.in>
