@@ -27,7 +27,7 @@ layout: default
 - [Git Cheat Sheet](https://training.github.com/kit/downloads/github-git-cheat-sheet.pdf)
 - [Setting up a simple ocr server in python](https://realpython.com/blog/python/setting-up-a-simple-ocr-server)
 - [IBM Linux socket 编程](http://www.ibm.com/developerworks/cn/education/linux/l-sock/l-sock.html)
-- [introduction-to-x64-assembly](https://software.intel.com/en-us/articles/introduction-to-x64-assembly)
+- [Introduction to x64 assembly](https://software.intel.com/en-us/articles/introduction-to-x64-assembly)
 - [AMD developer manuals](http://developer.amd.com/resources/documentation-articles/developer-guides-manuals)
 
 ### Markdown
