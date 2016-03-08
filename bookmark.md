@@ -29,6 +29,7 @@ layout: default
 - [IBM Linux socket 编程](http://www.ibm.com/developerworks/cn/education/linux/l-sock/l-sock.html)
 - [Introduction to x64 assembly](https://software.intel.com/en-us/articles/introduction-to-x64-assembly)
 - [AMD developer manuals](http://developer.amd.com/resources/documentation-articles/developer-guides-manuals)
+- [Python bitstring module](http://pythonhosted.org/bitstring/index.html)
 
 ### Markdown
 - Markable  <https://markable.in>
