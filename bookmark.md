@@ -20,6 +20,8 @@ layout: default
 - Hash toolkit <http://hashtoolkit.com>
 - Springer scientific documents searching <http://link.springer.com>
 - Free It eBooks <https://ebooks-it.org>
+- Retargetable Decompiler <https://retdec.com>
+- Online disassembler <http://disassembler.io>
 
 ### 资料
 - [How to make an Operating System](https://samypesse.gitbooks.io/how-to-create-an-operating-system)
@@ -30,6 +32,7 @@ layout: default
 - [Introduction to x64 assembly](https://software.intel.com/en-us/articles/introduction-to-x64-assembly)
 - [AMD developer manuals](http://developer.amd.com/resources/documentation-articles/developer-guides-manuals)
 - [Python bitstring module](http://pythonhosted.org/bitstring/index.html)
+- [Reverse engineering resources - decompiler] (http://www.backerstreet.com/decompiler/decompilers.htm)
 
 ### Markdown
 - Markable  <https://markable.in>
