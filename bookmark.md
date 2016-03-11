@@ -32,7 +32,8 @@ layout: default
 - [Introduction to x64 assembly](https://software.intel.com/en-us/articles/introduction-to-x64-assembly)
 - [AMD developer manuals](http://developer.amd.com/resources/documentation-articles/developer-guides-manuals)
 - [Python bitstring module](http://pythonhosted.org/bitstring/index.html)
-- [Reverse engineering resources - decompiler] (http://www.backerstreet.com/decompiler/decompilers.htm)
+- [Reverse engineering resources - decompiler](http://www.backerstreet.com/decompiler/decompilers.htm)
+- [Be a kernel hacker](https://www.linuxvoice.com/be-a-kernel-hacker)
 
 ### Markdown
 - Markable  <https://markable.in>
