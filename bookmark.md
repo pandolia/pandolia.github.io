@@ -22,6 +22,7 @@ layout: default
 - Free It eBooks <https://ebooks-it.org>
 - Retargetable Decompiler <https://retdec.com>
 - Online disassembler <http://disassembler.io>
+- Osdev <http://wiki.osdev.org>
 
 ### 资料
 - [How to make an Operating System](https://samypesse.gitbooks.io/how-to-create-an-operating-system)
@@ -34,6 +35,8 @@ layout: default
 - [Python bitstring module](http://pythonhosted.org/bitstring/index.html)
 - [Reverse engineering resources - decompiler](http://www.backerstreet.com/decompiler/decompilers.htm)
 - [Be a kernel hacker](https://www.linuxvoice.com/be-a-kernel-hacker)
+- [System V Application Binary Interface - DRAFT - 17](http://www.sco.com/developers/gabi/2003-12-17/contents.html)
+- [Ciro Santilli's blog](www.cirosantilli.com)
 
 ### Markdown
 - Markable  <https://markable.in>
