@@ -21,7 +21,7 @@ category: 笔记
 
 然后将电脑设置为U盘启动, 就可以看到Debian的安装界面了。
 
-**（3） 用Grub通过硬盘安装Debian8.2.0**
+**（3） 用Grub通过硬盘安装Debian8.4.0**
 
 电脑中已经安装了Win7和Debian7双系统，用Grub启动。则可以用Grub从硬盘安装Debian8。
 
