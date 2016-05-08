@@ -8,8 +8,8 @@
     
     <title>第09章 上下文无关语法及分析 &mdash; 自己动手写编译器</title>
     
-    <link rel="stylesheet" href="_static/default.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="static/default.css" type="text/css" />
+    <link rel="stylesheet" href="static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
@@ -20,9 +20,9 @@
         HAS_SOURCE:  true
       };
     </script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/underscore.js"></script>
+    <script type="text/javascript" src="static/doctools.js"></script>
     <link rel="top" title="自己动手写编译器" href="index.html" />
     <link rel="next" title="第10章 自顶向下分析" href="ch10_top_down_parse.html" />
     <link rel="prev" title="第08章 用 flex 做词法分析" href="ch8_flex.html" /> 
@@ -127,24 +127,24 @@ op   -&gt; + - * /
 <div class="section" id="id3">
 <h2>9.2 分析树和抽象语法树<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
 <p>语法分析不但要判断给定的句子是否符合语法结构，而且还要分析出该句子符合哪些结构，也就是说，要分析出这个句子是怎么从起始符号开始产生出来的，并根据产生过程生成语法树。如，对于 “我吃饭” 这句话，只有我们知道了 主语、谓语和宾语 分别对应的是那个词，我们才能真正理解这句话的含义。</p>
-<a class="reference internal image-reference" href="_images/syntax_1.png"><img alt="_images/syntax_1.png" src="_images/syntax_1.png" style="width: 158px; height: 131px;" /></a>
+<a class="reference internal image-reference" href="images/syntax_1.png"><img alt="images/syntax_1.png" src="images/syntax_1.png" style="width: 158px; height: 131px;" /></a>
 <p><strong>图9.1 语法树示意图</strong></p>
 <p>以上一节表达式语法为例，给定一个句子 12 + 53 ，经过观察，发现此句子可以按以下方式被推导出来：</p>
 <div class="highlight-text"><div class="highlight"><pre>Expr ==&gt; Expr + Expr ==&gt; number + Expr ==&gt; number + number ==&gt; 12 + 53
 </pre></div>
 </div>
 <p>以上推导过程可以用分析树来表示：</p>
-<a class="reference internal image-reference" href="_images/syntax_2.png"><img alt="_images/syntax_2.png" src="_images/syntax_2.png" style="width: 259px; height: 158px;" /></a>
+<a class="reference internal image-reference" href="images/syntax_2.png"><img alt="images/syntax_2.png" src="images/syntax_2.png" style="width: 259px; height: 158px;" /></a>
 <p><strong>图9.2 分析树示意图a</strong></p>
 <p>再看一个稍微长的句子： 12 + ( 53 - 7 ) ，其分析树如下：</p>
-<a class="reference internal image-reference" href="_images/syntax_3.png"><img alt="_images/syntax_3.png" src="_images/syntax_3.png" style="width: 315px; height: 261px;" /></a>
+<a class="reference internal image-reference" href="images/syntax_3.png"><img alt="images/syntax_3.png" src="images/syntax_3.png" style="width: 315px; height: 261px;" /></a>
 <p><strong>图9.3 分析树示意图b</strong></p>
 <p>可以去掉此分析树中一些多余的节点，并进一步浓缩，得到抽象语法树：</p>
-<a class="reference internal image-reference" href="_images/syntax_4.png"><img alt="_images/syntax_4.png" src="_images/syntax_4.png" style="width: 322px; height: 150px;" /></a>
+<a class="reference internal image-reference" href="images/syntax_4.png"><img alt="images/syntax_4.png" src="images/syntax_4.png" style="width: 322px; height: 150px;" /></a>
 <p><strong>图9.4 抽象语法树示意图a</strong></p>
 <p>对于这种树状结构，可以采用递归的方式加以分析，从而生成目标代码。</p>
 <p>再看一个句子： 12 + 53 * 7 ，这时候问题来了，我们发现它可以由两种不同的方式推导出来：</p>
-<a class="reference internal image-reference" href="_images/syntax_5.png"><img alt="_images/syntax_5.png" src="_images/syntax_5.png" style="width: 755px; height: 170px;" /></a>
+<a class="reference internal image-reference" href="images/syntax_5.png"><img alt="images/syntax_5.png" src="images/syntax_5.png" style="width: 755px; height: 170px;" /></a>
 <p><strong>图9.5 抽象语法树示意图b</strong></p>
 <p>这就是语法的歧义性，所谓 <strong>歧义（ambiguity）</strong>，就是指对于一个符合语法结构的句子，它可以由两种不同的方式被推导出来。如果一个语法中，任何一个句子的推导方式都是唯一的，那这个语法就被称为是 <strong>没有歧义</strong> 的。显然，程序语言必须是没有歧义的，对于上面的表达式，我们肯定希望它只能按后一种方式被推导。</p>
 <p>消除歧义的方法之一是改写语法，将有歧义的产生式改写成无歧义的，这种改写非常困难，而且改写后的产生式往往和原产生式相差很大，可读性非常差。另一种方法就是引入 <strong>优先级</strong> ，不需要改写语法，当推导过程中出现歧义的时候（也就是出现两种不同的推导方式的时候），利用符号的优先级来选择需要的推导方式，这种方法将在第 12 章中介绍。</p>
@@ -507,9 +507,9 @@ B –&gt; b | bB
 </table>
 <p><strong>（3）分析流程图</strong></p>
 <p>两种分析方法的分析流程见下面两个图：</p>
-<a class="reference internal image-reference" href="_images/expand.png"><img alt="_images/expand.png" src="_images/expand.png" style="width: 957px; height: 133px;" /></a>
+<a class="reference internal image-reference" href="images/expand.png"><img alt="images/expand.png" src="images/expand.png" style="width: 957px; height: 133px;" /></a>
 <p><strong>图9.6 自顶向下分析法流程图</strong></p>
-<a class="reference internal image-reference" href="_images/reduce.png"><img alt="_images/reduce.png" src="_images/reduce.png" style="width: 950px; height: 126px;" /></a>
+<a class="reference internal image-reference" href="images/reduce.png"><img alt="images/reduce.png" src="images/reduce.png" style="width: 950px; height: 126px;" /></a>
 <p><strong>图9.7 自底向上分析法流程图</strong></p>
 <p><strong>（4）分析过程的回溯和歧义</strong></p>
 <p>上面的例子其实是一个精心挑选出来的例子，在推导的过程中，每一步都只有唯一的一个产生式可以应用，即每一步都可以排除掉其他所有的产生式。但在实际分析时，在中间过程中可能会遇到：</p>

@@ -4,7 +4,7 @@
 
 TinyC 编译器可将 TinyC 源程序编译成 Linux 下的可执行程序，其编译及运行基本流程如下图，首先利用 TinyC 前端将 TinyC 源程序编译成中间代码 Pcode ，再利用 Nasm 的宏程序将 Pcode 翻译成 x86（32位） 汇编指令，然后利用 Nasm 汇编成二进制目标程序，最后链接成 Linux 下的 32 位可执行程序，可直接在 Linux 下运行。另外，中间代码 Pcode 也可以用 Pcode 模拟器直接运行。
 
-.. image:: /_images/TinyC_overview.png
+.. image:: /images/TinyC_overview.png
 	:height: 508px
 	:width:  402px
 

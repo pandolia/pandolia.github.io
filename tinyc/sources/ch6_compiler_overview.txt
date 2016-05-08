@@ -22,7 +22,7 @@
 
 编译器的工作流程见下图：
 
-.. image:: /_images/ch6/compiler_overview.png
+.. image:: /images/ch6/compiler_overview.png
 	:width:  904px
 	:height: 601px
 
@@ -78,7 +78,7 @@
 
 接下来，根据语言的语法规则来解析这个 token 流。首先，这是一个语句。而TinyC 中只有四种语句：赋值语句，函数调用语句， if 语句和 while 语句。把这四种语句的语法结构和这个 token 流对比一下发现只有赋值语句的结构才能和它匹配：
 
-.. image:: /_images/ch6/syntax_tree-1.png
+.. image:: /images/ch6/syntax_tree-1.png
 	:width:  291px
 	:height: 73px
 
@@ -86,7 +86,7 @@
 
 于是将此语法结构应用到 token 流上，把源程序的等号两边的内容分别放在该语法结构树的对应节点上，生成语法树如下：
 
-.. image:: /_images/ch6/syntax_tree-2.png
+.. image:: /images/ch6/syntax_tree-2.png
 	:width:  380px
 	:height: 195px
 
@@ -94,7 +94,7 @@
 
 接下来，对这个语法树上的 expresion<value + sum(5, 123)> 进行解析。TinyC中的表达式有很多种，包括：变量表达式、数字表达式、加法表达式、减法表达式等等。经过对比，发现只有加法表达式的结构才能匹配这个 <value + sum(5, 123)>，于是将加法表达式的语法结构应用到此表达式上，生成：
 
-.. image:: /_images/ch6/syntax_tree-3.png
+.. image:: /images/ch6/syntax_tree-3.png
 	:width:  362px
 	:height: 256px
 
@@ -102,7 +102,7 @@
 
 然后，解析这个语法树上的 <value> 和 <sum(5, 123> ，经过对比，发现只有变量表达式和函数调用表达式的结构能匹配成功，应用后，得到：
 
-.. image:: /_images/ch6/syntax_tree-4.png
+.. image:: /images/ch6/syntax_tree-4.png
 	:width:  597px
 	:height: 527px
 
@@ -110,7 +110,7 @@
 
 这个语法树中，有些节点是可以去掉的，如 assign expression 中的 '=' 和 ';' ，既然我们已经知道这是一个赋值表达式，那么这两个节点是不必要的了，我们去掉这样的节点，同时对语法树进一步浓缩，可以得到最终的抽象语法树：
 
-.. image:: /_images/ch6/syntax_tree-5.png
+.. image:: /images/ch6/syntax_tree-5.png
 	:width:  675px
 	:height: 249px
 
@@ -154,7 +154,7 @@
 
 第二个原因是是为了增加编译器的模块化、可移植性和可扩展性，一般来说，中间代码既独立于任何高级语言，也独立于任何目标机器架构，这就为开发出适应性广泛的编译器提供了媒介。如下图中，可以通过编写 m + n 个编译模块而获得 m * n 种编译器。
 
-.. image:: /_images/ch6/ir_code.png
+.. image:: /images/ch6/ir_code.png
 	:width:  478px
 	:height: 251px
 
@@ -270,7 +270,7 @@
 -----------------------------
 TinyC 编译器是一个非常 "tiny" 的编译器，仅保留了编译器中最基本的功能，只保留了词法分析、语法分析、中间代码生成以及目标代码生成，其中中间代码是在语法分析的过程中同步进行的，TinyC 编译器的工作流程如下：
 
-.. image:: /_images/ch6/tinyc_overview_1.png
+.. image:: /images/ch6/tinyc_overview_1.png
 	:width:  835px
 	:height: 361px
 

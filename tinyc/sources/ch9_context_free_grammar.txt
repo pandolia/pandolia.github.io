@@ -123,7 +123,7 @@
 ------------------------
 语法分析不但要判断给定的句子是否符合语法结构，而且还要分析出该句子符合哪些结构，也就是说，要分析出这个句子是怎么从起始符号开始产生出来的，并根据产生过程生成语法树。如，对于 “我吃饭” 这句话，只有我们知道了 主语、谓语和宾语 分别对应的是那个词，我们才能真正理解这句话的含义。
 
-.. image:: /_images/ch9/syntax_1.png
+.. image:: /images/ch9/syntax_1.png
 	:width:  158px
 	:height: 131px
 
@@ -137,7 +137,7 @@
 
 以上推导过程可以用分析树来表示：
 
-.. image:: /_images/ch9/syntax_2.png
+.. image:: /images/ch9/syntax_2.png
 	:width:  259px
 	:height: 158px
 
@@ -145,7 +145,7 @@
 
 再看一个稍微长的句子： 12 + ( 53 - 7 ) ，其分析树如下：
 
-.. image:: /_images/ch9/syntax_3.png
+.. image:: /images/ch9/syntax_3.png
 	:width:  315px
 	:height: 261px
 
@@ -153,7 +153,7 @@
 
 可以去掉此分析树中一些多余的节点，并进一步浓缩，得到抽象语法树：
 
-.. image:: /_images/ch9/syntax_4.png
+.. image:: /images/ch9/syntax_4.png
 	:width:  322px
 	:height: 150px
 
@@ -163,7 +163,7 @@
 
 再看一个句子： 12 + 53 * 7 ，这时候问题来了，我们发现它可以由两种不同的方式推导出来：
 
-.. image:: /_images/ch9/syntax_5.png
+.. image:: /images/ch9/syntax_5.png
 	:width:  755px
 	:height: 170px
 
@@ -321,14 +321,14 @@ Working-string            Production
 
 两种分析方法的分析流程见下面两个图：
 
-.. image:: /_images/ch9/expand.png
+.. image:: /images/ch9/expand.png
 	:width:  957px
 	:height: 133px
 
 **图9.6 自顶向下分析法流程图**
 
 
-.. image:: /_images/ch9/reduce.png
+.. image:: /images/ch9/reduce.png
 	:width:  950px
 	:height: 126px
 

@@ -8,8 +8,8 @@
     
     <title>第02章 源程序 TinyC &mdash; 自己动手写编译器</title>
     
-    <link rel="stylesheet" href="_static/default.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="static/default.css" type="text/css" />
+    <link rel="stylesheet" href="static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
@@ -20,9 +20,9 @@
         HAS_SOURCE:  true
       };
     </script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/underscore.js"></script>
+    <script type="text/javascript" src="static/doctools.js"></script>
     <link rel="top" title="自己动手写编译器" href="index.html" />
     <link rel="next" title="第03章 中间代码 Pcode (上)" href="ch3_Pcode_syntax_a.html" />
     <link rel="prev" title="第01章 概 述" href="ch1_overview.html" /> 
@@ -155,7 +155,7 @@ void func1(int a, int b) {
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>以上代码中的第一行的 #include &#8220;for_gcc_build.hh&#8221; 是为了利用gcc来编译该文件的，TinyC 编译器会注释掉该行。<a class="reference download internal" href="_downloads/for_gcc_build.hh"><tt class="xref download docutils literal"><span class="pre">for_gcc_build.hh</span></tt></a> 文件源码如下：</p>
+<p>以上代码中的第一行的 #include &#8220;for_gcc_build.hh&#8221; 是为了利用gcc来编译该文件的，TinyC 编译器会注释掉该行。<a class="reference download internal" href="downloads/for_gcc_build.hh"><tt class="xref download docutils literal"><span class="pre">for_gcc_build.hh</span></tt></a> 文件源码如下：</p>
 <div class="highlight-c"><div class="highlight"><pre><span class="cp">#include &lt;stdio.h&gt;</span>
 <span class="cp">#include &lt;string.h&gt;</span>
 <span class="cp">#include &lt;stdarg.h&gt;</span>
@@ -202,7 +202,7 @@ void func1(int a, int b) {
 </pre></div>
 </div>
 <p>此文件中提供了 print 和 readint 函数，另外，将所有 C 语言支持、但 TinyC 不支持的关键词全部 define 成空名称，这样来保证 gcc 和 TinyC 编译器的效果差不多。利用 gcc 编译的目的是为了测试和对比 TinyC 编译器的编译结果。</p>
-<p>让我们先用 gcc 编译并运行一下上面这个典型的 TinyC 源文件吧。将以上代码分别存为 <a class="reference download internal" href="_downloads/tinyc.c"><tt class="xref download docutils literal"><span class="pre">tinyc.c</span></tt></a> 和 <a class="reference download internal" href="_downloads/for_gcc_build.hh"><tt class="xref download docutils literal"><span class="pre">for_gcc_build.hh</span></tt></a>，放在同一目录下，打开终端并 cd 到该目录，输入：</p>
+<p>让我们先用 gcc 编译并运行一下上面这个典型的 TinyC 源文件吧。将以上代码分别存为 <a class="reference download internal" href="downloads/tinyc.c"><tt class="xref download docutils literal"><span class="pre">tinyc.c</span></tt></a> 和 <a class="reference download internal" href="downloads/for_gcc_build.hh"><tt class="xref download docutils literal"><span class="pre">for_gcc_build.hh</span></tt></a>，放在同一目录下，打开终端并 cd 到该目录，输入：</p>
 <div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>gcc -o tinyc tinyc.c
 <span class="nv">$ </span>./tinyc
 </pre></div>

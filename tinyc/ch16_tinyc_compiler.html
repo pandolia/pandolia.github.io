@@ -8,8 +8,8 @@
     
     <title>第16章 TinyC 编译器 &mdash; 自己动手写编译器</title>
     
-    <link rel="stylesheet" href="_static/default.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="static/default.css" type="text/css" />
+    <link rel="stylesheet" href="static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
@@ -20,9 +20,9 @@
         HAS_SOURCE:  true
       };
     </script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/underscore.js"></script>
+    <script type="text/javascript" src="static/doctools.js"></script>
     <link rel="top" title="自己动手写编译器" href="index.html" />
     <link rel="prev" title="第15章 TinyC 后端" href="ch15_tinyc_backend.html" /> 
   </head>
@@ -47,7 +47,7 @@
 <p>在第 14 章中，完成了 TinyC 前端，可以将 TinyC 源程序编译成中间代码 Pcode；在第 15 章中，完成了 TinyC 后端，可以将改写后的中间代码 Pcode 翻译、汇编并链接成可执行程序；现在，是时候将二者结合起来形成最终的 TinyC 编译器了。</p>
 <div class="section" id="id1">
 <h2>16.1 改进 TinyC 前端<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
-<p>上一章的 TinyC 后端中，为了降低 Pcode 命令的翻译难度，对 arg / var / ENDFUNC 命令的格式进行了改写，因此需要改进 TinyC 前端，使之能生成能被 TinyC 后端所识别的新格式 Pcode 命令。具体来说，对于下面这段源程序 <a class="reference download internal" href="_downloads/test4.c"><tt class="xref download docutils literal"><span class="pre">test.c</span></tt></a> ：</p>
+<p>上一章的 TinyC 后端中，为了降低 Pcode 命令的翻译难度，对 arg / var / ENDFUNC 命令的格式进行了改写，因此需要改进 TinyC 前端，使之能生成能被 TinyC 后端所识别的新格式 Pcode 命令。具体来说，对于下面这段源程序 <a class="reference download internal" href="downloads/test4.c"><tt class="xref download docutils literal"><span class="pre">test.c</span></tt></a> ：</p>
 <div class="highlight-c"><div class="highlight"><pre><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span> 
     <span class="kt">int</span> <span class="n">a</span><span class="p">;</span>
     <span class="n">a</span> <span class="o">=</span> <span class="mi">3</span><span class="p">;</span>
@@ -62,7 +62,7 @@
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>改进后 TinyC 前端需要生成一个 Pcode 文件 <a class="reference download internal" href="_downloads/test1.pcode"><tt class="xref download docutils literal"><span class="pre">test.pcode</span></tt></a> ：</p>
+<p>改进后 TinyC 前端需要生成一个 Pcode 文件 <a class="reference download internal" href="downloads/test1.pcode"><tt class="xref download docutils literal"><span class="pre">test.pcode</span></tt></a> ：</p>
 <div class="highlight-nasm"><div class="highlight"><pre>FUNC @main:
 <span class="hll">    main.var a
 </span>
@@ -90,7 +90,7 @@ FUNC @sum:
 <span class="hll">ENDFUNC@sum
 </span></pre></div>
 </div>
-<p>以及一个宏文件 <a class="reference download internal" href="_downloads/test1.funcmacro"><tt class="xref download docutils literal"><span class="pre">test.funcmacro</span></tt></a> ：</p>
+<p>以及一个宏文件 <a class="reference download internal" href="downloads/test1.funcmacro"><tt class="xref download docutils literal"><span class="pre">test.funcmacro</span></tt></a> ：</p>
 <div class="highlight-nasm"><div class="highlight"><pre>; ==== begin function `main` ====
 %define main.varc 1
 
@@ -136,7 +136,7 @@ FUNC @sum:
 ; ==== end function `sum`  ====
 </pre></div>
 </div>
-<p>在第 14 章的 TinyC 前端 1.0 版的 parser.y 的基础上，针对函数定义、参数定义以及变量定义的语句进行改写，改进后的语法分析文件 <a class="reference download internal" href="_downloads/parser4.y"><tt class="xref download docutils literal"><span class="pre">parser.y</span></tt></a> ：</p>
+<p>在第 14 章的 TinyC 前端 1.0 版的 parser.y 的基础上，针对函数定义、参数定义以及变量定义的语句进行改写，改进后的语法分析文件 <a class="reference download internal" href="downloads/parser4.y"><tt class="xref download docutils literal"><span class="pre">parser.y</span></tt></a> ：</p>
 <div class="highlight-c"><div class="highlight"><pre>%{
 
 #include &lt;stdio.h&gt;
@@ -506,8 +506,8 @@ void quit_parser() {
 }
 </pre></div>
 </div>
-<p>词法分析文件 <a class="reference download internal" href="_downloads/scanner4.l"><tt class="xref download docutils literal"><span class="pre">scanner.l</span></tt></a> 不变，和第 14 章的 TinyC 前端 1.0 版的相同。</p>
-<p>将以上 <a class="reference download internal" href="_downloads/scanner4.l"><tt class="xref download docutils literal"><span class="pre">scanner.l</span></tt></a>, <a class="reference download internal" href="_downloads/parser4.y"><tt class="xref download docutils literal"><span class="pre">parser.y</span></tt></a>, <a class="reference download internal" href="_downloads/test4.c"><tt class="xref download docutils literal"><span class="pre">test.c</span></tt></a> 三个文件放在同一目录，输入以下命令生成 TinyC 前端 tcc-frontend :</p>
+<p>词法分析文件 <a class="reference download internal" href="downloads/scanner4.l"><tt class="xref download docutils literal"><span class="pre">scanner.l</span></tt></a> 不变，和第 14 章的 TinyC 前端 1.0 版的相同。</p>
+<p>将以上 <a class="reference download internal" href="downloads/scanner4.l"><tt class="xref download docutils literal"><span class="pre">scanner.l</span></tt></a>, <a class="reference download internal" href="downloads/parser4.y"><tt class="xref download docutils literal"><span class="pre">parser.y</span></tt></a>, <a class="reference download internal" href="downloads/test4.c"><tt class="xref download docutils literal"><span class="pre">test.c</span></tt></a> 三个文件放在同一目录，输入以下命令生成 TinyC 前端 tcc-frontend :</p>
 <div class="highlight-bash"><div class="highlight"><pre>flex scanner.l
 bison -vdty parser.y
 gcc -o tcc-frontend lex.yy.c y.tab.c
@@ -523,15 +523,15 @@ gcc -o tcc-frontend lex.yy.c y.tab.c
 <h2>16.2 TinyC 编译器<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
 <p>现在可以将 TinyC 前端和 TinyC 后端整合起来了。新建一个空的 tinyc 目录，然后 cd 到此目录，之后新建一个 sources 目录，然后将以下 7 个文件放到 sources 目录下:</p>
 <blockquote>
-<div><p><a class="reference download internal" href="_downloads/scanner5.l"><tt class="xref download docutils literal"><span class="pre">scanner.l</span></tt></a>   ， 词法分析文件，和上一节相同；</p>
-<p><a class="reference download internal" href="_downloads/parser5.y"><tt class="xref download docutils literal"><span class="pre">parser.y</span></tt></a>     ， 语法分析文件，和上一节相同；</p>
-<p><a class="reference download internal" href="_downloads/pysim3.py"><tt class="xref download docutils literal"><span class="pre">pysim.py</span></tt></a>     ， Pcode 模拟器（ python 程序），和第 4 章相同；</p>
-<p><a class="reference download internal" href="_downloads/tio3.c"><tt class="xref download docutils literal"><span class="pre">tio.c</span></tt></a>           ， 库函数文件，和上一章最后一节相同；</p>
-<p><a class="reference download internal" href="_downloads/macro5.inc"><tt class="xref download docutils literal"><span class="pre">macro.inc</span></tt></a>   ， NASM 宏文件，和上一章最后一节相同；</p>
-<p><a class="reference download internal" href="_downloads/tcc"><tt class="xref download docutils literal"><span class="pre">tcc</span></tt></a>               ， 编译 TinyC 源程序的脚本文件；</p>
-<p><a class="reference download internal" href="_downloads/pysimulate"><tt class="xref download docutils literal"><span class="pre">pysimulate</span></tt></a> ， 模拟运行 Pcode 的脚本文件。</p>
+<div><p><a class="reference download internal" href="downloads/scanner5.l"><tt class="xref download docutils literal"><span class="pre">scanner.l</span></tt></a>   ， 词法分析文件，和上一节相同；</p>
+<p><a class="reference download internal" href="downloads/parser5.y"><tt class="xref download docutils literal"><span class="pre">parser.y</span></tt></a>     ， 语法分析文件，和上一节相同；</p>
+<p><a class="reference download internal" href="downloads/pysim3.py"><tt class="xref download docutils literal"><span class="pre">pysim.py</span></tt></a>     ， Pcode 模拟器（ python 程序），和第 4 章相同；</p>
+<p><a class="reference download internal" href="downloads/tio3.c"><tt class="xref download docutils literal"><span class="pre">tio.c</span></tt></a>           ， 库函数文件，和上一章最后一节相同；</p>
+<p><a class="reference download internal" href="downloads/macro5.inc"><tt class="xref download docutils literal"><span class="pre">macro.inc</span></tt></a>   ， NASM 宏文件，和上一章最后一节相同；</p>
+<p><a class="reference download internal" href="downloads/tcc"><tt class="xref download docutils literal"><span class="pre">tcc</span></tt></a>               ， 编译 TinyC 源程序的脚本文件；</p>
+<p><a class="reference download internal" href="downloads/pysimulate"><tt class="xref download docutils literal"><span class="pre">pysimulate</span></tt></a> ， 模拟运行 Pcode 的脚本文件。</p>
 </div></blockquote>
-<p>然后在 tinyc 目录下新建一个脚本文件 <a class="reference download internal" href="_downloads/build.sh"><tt class="xref download docutils literal"><span class="pre">build.sh</span></tt></a> ，内容如下:</p>
+<p>然后在 tinyc 目录下新建一个脚本文件 <a class="reference download internal" href="downloads/build.sh"><tt class="xref download docutils literal"><span class="pre">build.sh</span></tt></a> ，内容如下:</p>
 <div class="highlight-bash"><div class="highlight"><pre>mkdir -p release
 flex sources/scanner.l
 bison -vdty sources/parser.y
@@ -547,7 +547,7 @@ chmod u+x release/tcc release/pysimulate
 </pre></div>
 </div>
 <p>在终端输入 <strong>bash build.sh</strong> 将编译生成 TinyC 前端 tcc-frontend 、库文件 libtio.a ，并放在 release 目录下，同时将 macro.inc, pysim.py, pysimulate, tcc 这四个文件拷贝至 release 目录，最后，将 release 目录输出到 PATH 环境变量中。现在，在终端输入 tcc filename.c 就可以利用 TinyC 编译成可执行程序了，而输入 pysimulate filename.asm -da 则可以用 Pcode 模拟器单步调试中间代码 Pcode 了。</p>
-<p>让我们来测试一下第一章的示例代码 <a class="reference download internal" href="_downloads/test5.c"><tt class="xref download docutils literal"><span class="pre">test.c</span></tt></a> 吧，将其放在当前目录，然后在终端输入 tcc test.c ，将生成一个 test-c-build 目录，此目录中包含了中间代码文件 test.asm 、函数定义宏文件 test.inc 、目标文件 test.o 、最终的可执行文件 test 。可以输入 test-c-build/test 来运行可执行文件，也可以输入 pysimulate test-c-build/test.asm -da 用 Pcode 模拟器单步调试中间代码。</p>
+<p>让我们来测试一下第一章的示例代码 <a class="reference download internal" href="downloads/test5.c"><tt class="xref download docutils literal"><span class="pre">test.c</span></tt></a> 吧，将其放在当前目录，然后在终端输入 tcc test.c ，将生成一个 test-c-build 目录，此目录中包含了中间代码文件 test.asm 、函数定义宏文件 test.inc 、目标文件 test.o 、最终的可执行文件 test 。可以输入 test-c-build/test 来运行可执行文件，也可以输入 pysimulate test-c-build/test.asm -da 用 Pcode 模拟器单步调试中间代码。</p>
 <p>脚本文件 tcc 首先调用 tcc-frontend 将输入文件（假设为 test.c ）编译为 test.asm 和 test.inc ，然后调用 nasm ，将 test.asm 、 test.inc 和 macro.inc 三个文件一起汇编成 test.o ，最后调用 ld 将 test.o 和 libtio.a 一起链接为最终的可执行程序 test 。 tcc 的内容如下：</p>
 <div class="highlight-bash"><div class="highlight"><pre><span class="c">#!/usr/bin/env bash</span>
 
@@ -593,7 +593,7 @@ mv <span class="s2">&quot;</span><span class="nv">$filename</span><span class="s
 python <span class="s2">&quot;</span><span class="k">$(</span>dirname <span class="nv">$0</span><span class="k">)</span><span class="s2">/pysim.py&quot;</span> <span class="nv">$1</span> <span class="nv">$2</span>
 </pre></div>
 </div>
-<p>下面来测试一下第 14 章最后的测试文件包 <a class="reference download internal" href="_downloads/samples.zip"><tt class="xref download docutils literal"><span class="pre">samples.zip</span></tt></a> ，将其解包至 samples 目录，再在当前目录新建一个脚本文件 <a class="reference download internal" href="_downloads/testall.sh"><tt class="xref download docutils literal"><span class="pre">testall.sh</span></tt></a> ，内容如下：</p>
+<p>下面来测试一下第 14 章最后的测试文件包 <a class="reference download internal" href="downloads/samples.zip"><tt class="xref download docutils literal"><span class="pre">samples.zip</span></tt></a> ，将其解包至 samples 目录，再在当前目录新建一个脚本文件 <a class="reference download internal" href="downloads/testall.sh"><tt class="xref download docutils literal"><span class="pre">testall.sh</span></tt></a> ，内容如下：</p>
 <div class="highlight-bash"><div class="highlight"><pre><span class="k">for</span> src in <span class="k">$(</span>ls samples/*.c<span class="k">)</span>
 <span class="k">do</span>
 	<span class="nv">filename</span><span class="o">=</span><span class="si">${</span><span class="nv">src</span><span class="p">%.*</span><span class="si">}</span>

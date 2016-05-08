@@ -11,6 +11,7 @@ description: > # this means to ignore newlines until "baseurl:"
   编程 算法 汇编 静态博客
 baseurl:  # the subpath of your site, e.g. /blog
 github_username:  pandolia
+include: ["/test/_x/bbb.png"]
 
 # customer global variable
 navigation:

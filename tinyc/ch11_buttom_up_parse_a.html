@@ -8,8 +8,8 @@
     
     <title>第11章 自底向上分析 (上) &mdash; 自己动手写编译器</title>
     
-    <link rel="stylesheet" href="_static/default.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="static/default.css" type="text/css" />
+    <link rel="stylesheet" href="static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
@@ -20,9 +20,9 @@
         HAS_SOURCE:  true
       };
     </script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/underscore.js"></script>
+    <script type="text/javascript" src="static/doctools.js"></script>
     <link rel="top" title="自己动手写编译器" href="index.html" />
     <link rel="next" title="第12章 自底向上分析 (下)" href="ch12_buttom_up_parse_b.html" />
     <link rel="prev" title="第10章 自顶向下分析" href="ch10_top_down_parse.html" /> 
@@ -334,7 +334,7 @@ T-&gt;id        E-&gt;T            T-&gt;id   E-&gt;E + T  T-&gt;(E)   E-&gt;T  
 <p><strong>产生式的起始形态（start configuration of a production）</strong> ： 位置黑点位于该产生式右边的第一个符号的前面的形态，如： A –&gt; •XYZ 。</p>
 <p><strong>产生式的已完成形态（complete configuration of a production）</strong> ： 位置黑点位于该产生式右边的最后一个符号的后面的形态，如： A –&gt; XYZ• 。也称为 <strong>可折叠形态（reduceable configuration）</strong>。</p>
 <p><strong>形态的转移</strong> ： 当一个形态 A –&gt; X•YZ 遇到一个符号 Y 时，它就转移到下个形态： A –&gt; XY•Z ，见下图：</p>
-<a class="reference internal image-reference" href="_images/conf.png"><img alt="_images/conf.png" src="_images/conf.png" style="width: 484px; height: 54px;" /></a>
+<a class="reference internal image-reference" href="images/conf.png"><img alt="images/conf.png" src="images/conf.png" style="width: 484px; height: 54px;" /></a>
 <p><strong>图11.1 形态转移示意图</strong></p>
 <p>若记 C = [A -&gt; X•YZ] ， C&#8217; = [A –&gt; XY•Z] ，称形态 C&#8217; 为形态 C 遇到符号 Y 时的 <strong>后继形态（successor configuration）</strong> ，可写为 NEXT(C, Y) 。若形态 C 遇到的符号 X 不等于其位置黑点后面的符号时，称 NEXT(C, X) 不存在。</p>
 <p><strong>延伸形态（extended configuration）</strong> ：对于形态 A –&gt; v•Yw ，若 Y 为非终结符，且 Y -&gt; u ，则形态 Y -&gt; •u 是形态 A –&gt; v•Yw 的延伸形态，进一步的，若 u 的第一个符号为非终结符 Z ，且 Z -&gt; u1 ，则形态 Z -&gt; •u1 既是 Y -&gt; •u 的延伸形态，也是 A –&gt; v•Yw 的延伸形态。</p>
@@ -396,10 +396,10 @@ B -&gt; bc
 </pre></div>
 </div>
 <p>对语法中的所有符号 X （S, A, B, a, b, c, d） ，求出 I0 遇到 X 的后继状态 NEXT(I0, X) ，若 NEXT(I0, X) 不是空集，则将其添加到状态转移图中，如下：</p>
-<a class="reference internal image-reference" href="_images/lr0_1.png"><img alt="_images/lr0_1.png" src="_images/lr0_1.png" style="width: 414px; height: 185px;" /></a>
+<a class="reference internal image-reference" href="images/lr0_1.png"><img alt="images/lr0_1.png" src="images/lr0_1.png" style="width: 414px; height: 185px;" /></a>
 <p><strong>图11.2 状态转移图1</strong></p>
 <p>按以上方法，不断的生成新的状态，直到不再出现新的状态，最终如下：</p>
-<a class="reference internal image-reference" href="_images/lr0_2.png"><img alt="_images/lr0_2.png" src="_images/lr0_2.png" style="width: 941px; height: 229px;" /></a>
+<a class="reference internal image-reference" href="images/lr0_2.png"><img alt="images/lr0_2.png" src="images/lr0_2.png" style="width: 941px; height: 229px;" /></a>
 <p><strong>图11.3 状态转移图2</strong></p>
 <p>显然，解析的最开始的时候，没有读入任何符号，此时的状态为 I0 ，每读入一个符号，则转移到另一个状态。</p>
 <p>这个状态转移图似乎和有限状态自动机的运行图很相似，那么，解析的过程是不是就是用有限状态自动机来依照上面那个图来运行一遍？答案是不行的。上一章已经说过了，有限状态自动机只能解析正则语言，无法解析复杂的上下文无关语言。为了解析上下文无关语法，我们需要一种更强大的自动机，这种自动机不仅仅需要记住它当前的状态，还需要记住它的历史路径，记住它是如何到达当前状态的。</p>

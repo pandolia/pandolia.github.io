@@ -8,8 +8,8 @@
     
     <title>第06章 编译器基本流程 &mdash; 自己动手写编译器</title>
     
-    <link rel="stylesheet" href="_static/default.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="static/default.css" type="text/css" />
+    <link rel="stylesheet" href="static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
@@ -20,9 +20,9 @@
         HAS_SOURCE:  true
       };
     </script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/underscore.js"></script>
+    <script type="text/javascript" src="static/doctools.js"></script>
     <link rel="top" title="自己动手写编译器" href="index.html" />
     <link rel="next" title="第07章 词法分析" href="ch7_lexical_basic.html" />
     <link rel="prev" title="第05章 手工编译 TinyC" href="ch5_TinyC_to_Pcode_man.html" /> 
@@ -61,7 +61,7 @@
 <p>先让我们回忆一下我们在上一章中是如何手工将源程序翻译成中间代码的，想一想翻译的第一步是什么？第一步是我们的人脑要理解源程序，理解源程序的结构，理解源程序的含义、作用，然后才能根据我们的理解进行翻译。</p>
 <p>要让计算机将源程序翻译成目标程序，我们也要让计算机真正的理解源程序，让计算机分析出源程序的结构，将源程序由一串无意义的字符流解析为一个个的有特定含义的构件，将这些构件进行转换后，再按特定的规则和顺序将转换后的构件拼装成目标程序。</p>
 <p>编译器的工作流程见下图：</p>
-<a class="reference internal image-reference" href="_images/compiler_overview.png"><img alt="_images/compiler_overview.png" src="_images/compiler_overview.png" style="width: 904px; height: 601px;" /></a>
+<a class="reference internal image-reference" href="images/compiler_overview.png"><img alt="images/compiler_overview.png" src="images/compiler_overview.png" style="width: 904px; height: 601px;" /></a>
 <p><strong>图6.1 编译器工作流程</strong></p>
 <p>编译器的工作流程简要描述如下：</p>
 <blockquote>
@@ -103,19 +103,19 @@ sum         标识符
 </div>
 <p>上面的 ID&lt;a&gt; 表示这一个标识符类型的 token ，其内容为 a。</p>
 <p>接下来，根据语言的语法规则来解析这个 token 流。首先，这是一个语句。而TinyC 中只有四种语句：赋值语句，函数调用语句， if 语句和 while 语句。把这四种语句的语法结构和这个 token 流对比一下发现只有赋值语句的结构才能和它匹配：</p>
-<a class="reference internal image-reference" href="_images/syntax_tree-1.png"><img alt="_images/syntax_tree-1.png" src="_images/syntax_tree-1.png" style="width: 291px; height: 73px;" /></a>
+<a class="reference internal image-reference" href="images/syntax_tree-1.png"><img alt="images/syntax_tree-1.png" src="images/syntax_tree-1.png" style="width: 291px; height: 73px;" /></a>
 <p><strong>图6.2 赋值语句的语法结构树</strong></p>
 <p>于是将此语法结构应用到 token 流上，把源程序的等号两边的内容分别放在该语法结构树的对应节点上，生成语法树如下：</p>
-<a class="reference internal image-reference" href="_images/syntax_tree-2.png"><img alt="_images/syntax_tree-2.png" src="_images/syntax_tree-2.png" style="width: 380px; height: 195px;" /></a>
+<a class="reference internal image-reference" href="images/syntax_tree-2.png"><img alt="images/syntax_tree-2.png" src="images/syntax_tree-2.png" style="width: 380px; height: 195px;" /></a>
 <p><strong>图6.3 语法解析第1步</strong></p>
 <p>接下来，对这个语法树上的 expresion&lt;value + sum(5, 123)&gt; 进行解析。TinyC中的表达式有很多种，包括：变量表达式、数字表达式、加法表达式、减法表达式等等。经过对比，发现只有加法表达式的结构才能匹配这个 &lt;value + sum(5, 123)&gt;，于是将加法表达式的语法结构应用到此表达式上，生成：</p>
-<a class="reference internal image-reference" href="_images/syntax_tree-3.png"><img alt="_images/syntax_tree-3.png" src="_images/syntax_tree-3.png" style="width: 362px; height: 256px;" /></a>
+<a class="reference internal image-reference" href="images/syntax_tree-3.png"><img alt="images/syntax_tree-3.png" src="images/syntax_tree-3.png" style="width: 362px; height: 256px;" /></a>
 <p><strong>图6.4 语法解析第2步</strong></p>
 <p>然后，解析这个语法树上的 &lt;value&gt; 和 &lt;sum(5, 123&gt; ，经过对比，发现只有变量表达式和函数调用表达式的结构能匹配成功，应用后，得到：</p>
-<a class="reference internal image-reference" href="_images/syntax_tree-4.png"><img alt="_images/syntax_tree-4.png" src="_images/syntax_tree-4.png" style="width: 597px; height: 527px;" /></a>
+<a class="reference internal image-reference" href="images/syntax_tree-4.png"><img alt="images/syntax_tree-4.png" src="images/syntax_tree-4.png" style="width: 597px; height: 527px;" /></a>
 <p><strong>图6.5 语法解析第3步</strong></p>
 <p>这个语法树中，有些节点是可以去掉的，如 assign expression 中的 &#8216;=&#8217; 和 &#8216;;&#8217; ，既然我们已经知道这是一个赋值表达式，那么这两个节点是不必要的了，我们去掉这样的节点，同时对语法树进一步浓缩，可以得到最终的抽象语法树：</p>
-<a class="reference internal image-reference" href="_images/syntax_tree-5.png"><img alt="_images/syntax_tree-5.png" src="_images/syntax_tree-5.png" style="width: 675px; height: 249px;" /></a>
+<a class="reference internal image-reference" href="images/syntax_tree-5.png"><img alt="images/syntax_tree-5.png" src="images/syntax_tree-5.png" style="width: 675px; height: 249px;" /></a>
 <p><strong>图6.6 语法解析第4步</strong></p>
 <p>可以看出，语法分析的过程就是不断的将语法规则应用于源程序，将源程序 <strong>解析</strong> 成一颗抽象语法树。</p>
 <p>语法分析可以说是编译器中最基础的一步，它将人可以理解的语法规则转换成计算机可以 &#8220;理解&#8221; 的树形结构，之后的语义分析、代码生成甚至代码优化都是基于对这个抽象树进行遍历、检查和修改优化的操作上进行的。</p>
@@ -143,7 +143,7 @@ sum         标识符
 <p>一般的编译器并不直接生成目标代码，而是先生成某种中间代码，然后再生成目标代码。</p>
 <p>之所以先生成中间代码，一个是为了降低编译器开发的难度，从第 4 章中对 Pcode 的总结中可以看到，对于这种既有部分高级语言特性、又有接近机器语言操作的中间代码，将高级语言翻译成中间代码、将此中间代码再翻译成目标代码的难度都比直接将高级语言翻译成目标代码的难度要低。</p>
 <p>第二个原因是是为了增加编译器的模块化、可移植性和可扩展性，一般来说，中间代码既独立于任何高级语言，也独立于任何目标机器架构，这就为开发出适应性广泛的编译器提供了媒介。如下图中，可以通过编写 m + n 个编译模块而获得 m * n 种编译器。</p>
-<a class="reference internal image-reference" href="_images/ir_code.png"><img alt="_images/ir_code.png" src="_images/ir_code.png" style="width: 478px; height: 251px;" /></a>
+<a class="reference internal image-reference" href="images/ir_code.png"><img alt="images/ir_code.png" src="images/ir_code.png" style="width: 478px; height: 251px;" /></a>
 <p><strong>图6.7 编译模块示意图</strong></p>
 <p>第三个原因是为了代码优化，一般来说，计算机直接生成的代码比人手写的汇编要庞大、重复很多，计算机科学家们对一些具有固定格式的中间代码（最典型的是三地址中间码）的进行大量的研究工作，提出了很多广泛应用的、效率非常高的优化算法，可以对中间代码进行优化，比直接对目标代码进行优化的效果要好很多。</p>
 <p>下面以图6.6的语法树为例说明中间代码生成的方法，首先从根节点 assign_statement 开始：</p>
@@ -230,7 +230,7 @@ ADD [ESP], EAX
 <div class="section" id="tinyc">
 <h2>6.3 TinyC 编译器的工作流程<a class="headerlink" href="#tinyc" title="Permalink to this headline">¶</a></h2>
 <p>TinyC 编译器是一个非常 &#8220;tiny&#8221; 的编译器，仅保留了编译器中最基本的功能，只保留了词法分析、语法分析、中间代码生成以及目标代码生成，其中中间代码是在语法分析的过程中同步进行的，TinyC 编译器的工作流程如下：</p>
-<a class="reference internal image-reference" href="_images/tinyc_overview_1.png"><img alt="_images/tinyc_overview_1.png" src="_images/tinyc_overview_1.png" style="width: 835px; height: 361px;" /></a>
+<a class="reference internal image-reference" href="images/tinyc_overview_1.png"><img alt="images/tinyc_overview_1.png" src="images/tinyc_overview_1.png" style="width: 835px; height: 361px;" /></a>
 <p><strong>图6.8 TinyC 编译器的工作流程</strong></p>
 <p>从下一章开始，本站将从词法分析开始，一步一步的介绍 TinyC 编译器的实现。</p>
 </div>

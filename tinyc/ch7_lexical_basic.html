@@ -8,8 +8,8 @@
     
     <title>第07章 词法分析 &mdash; 自己动手写编译器</title>
     
-    <link rel="stylesheet" href="_static/default.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="static/default.css" type="text/css" />
+    <link rel="stylesheet" href="static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
@@ -20,9 +20,9 @@
         HAS_SOURCE:  true
       };
     </script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/underscore.js"></script>
+    <script type="text/javascript" src="static/doctools.js"></script>
     <link rel="top" title="自己动手写编译器" href="index.html" />
     <link rel="next" title="第08章 用 flex 做词法分析" href="ch8_flex.html" />
     <link rel="prev" title="第06章 编译器基本流程" href="ch6_compiler_overview.html" /> 
@@ -51,7 +51,7 @@
 <div class="section" id="id2">
 <h2>7.1 词法分析的基本概念<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
 <p>词法分析也称为 <strong>分词</strong> ，此阶段编译器从左向右扫描源文件，将其字符流分割成一个个的 <strong>词</strong> （ <strong>token</strong> 、 <strong>记号</strong> ，后文中将称为 <strong>token</strong> ）。所谓 <strong>token</strong> ，就是源文件中不可再进一步分割的一串字符，类似于英语中单词，或汉语中的词。</p>
-<a class="reference internal image-reference" href="_images/lexical_analysis.png"><img alt="_images/lexical_analysis.png" src="_images/lexical_analysis.png" style="width: 585px; height: 190px;" /></a>
+<a class="reference internal image-reference" href="images/lexical_analysis.png"><img alt="images/lexical_analysis.png" src="images/lexical_analysis.png" style="width: 585px; height: 190px;" /></a>
 <p><strong>图7.1 词法分析示意图</strong></p>
 <p>英语中的单词的数量是有限的，程序语言中可用的 token 的类别也是有限的，而且是非常少的。一般来说程序语言中的 token 有：常数（整数、小数、字符、字符串等），操作符（算术操作符、比较操作符、逻辑操作符），分隔符（逗号、分号、括号等），保留字，标识符（变量名、函数名、类名等）等。如：</p>
 <blockquote>
@@ -110,7 +110,7 @@ T_STRINGCONSTANT        &quot;This is a string&quot; / &quot;hello&quot; / ...
 <p>若本轮扫描的第一个字符为为空格，则跳过此字符。</p>
 <p><strong>（7）注释</strong></p>
 <p>注释仅考虑以 <strong>#</strong> 开始的情况，若本轮扫描的第一个字符为 <strong>#</strong>，则直接跳过此行字符流。</p>
-<p>以上算法的实现也很简单，<a class="reference download internal" href="_downloads/scan.py"><tt class="xref download docutils literal"><span class="pre">scan.py</span></tt></a> 是用 python 按上述思路实现的一个扫描器，它以自己为源文件进行分词。将此文件下载下来，放在终端的当前目录，再在终端输入：</p>
+<p>以上算法的实现也很简单，<a class="reference download internal" href="downloads/scan.py"><tt class="xref download docutils literal"><span class="pre">scan.py</span></tt></a> 是用 python 按上述思路实现的一个扫描器，它以自己为源文件进行分词。将此文件下载下来，放在终端的当前目录，再在终端输入：</p>
 <div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>python scan.py
 </pre></div>
 </div>
@@ -266,7 +266,7 @@ T_string            &quot;,&quot;
 <h2>7.4 有限状态自动机FA<a class="headerlink" href="#fa" title="Permalink to this headline">¶</a></h2>
 <p>有限状态自动机（finate automaton）是用来判断字符串（句子）是否和正则表达式匹配的假想机器，它有一个字母表 Σ 、一个状态集合 S ，一个转换函数 T ，当它处于某个状态时，若它读入了一个字符（必须是字母表里的字符），则会根据当前状态和读入的字符自动转换到另一个状态，它有一个初始状态，还有一些所谓的接受状态。</p>
 <p>它的工作过程是：首先自动机处于初始状态，之后它开始读入字符串，每读入一个字符，它都根据当前状态和读入字符转换到下一状态，直到字符串结束，若此时自动机处于其接受状态，则表示该字符串被此自动机接受。如下图：</p>
-<a class="reference internal image-reference" href="_images/dfa.png"><img alt="_images/dfa.png" src="_images/dfa.png" style="width: 501px; height: 161px;" /></a>
+<a class="reference internal image-reference" href="images/dfa.png"><img alt="images/dfa.png" src="images/dfa.png" style="width: 501px; height: 161px;" /></a>
 <p><strong>图7.2 典型的有限状态自动机</strong></p>
 <p>上图中圆圈表示各种状态，各箭头及签头上的字符表示状态的转换表，自动机只有一个初始状态，用一个不含字符的箭头指向此状态，可以认为此为自动机的入口，自动机可以有一个或多个接受状态，用双圆圈表示。上图中的自动机的字母表为 {a, b}，初始状态为 S1 ，当它读入一个 a 后，就转到状态 S2 ，若读入的是 b ，则转到 S4，然后一个接一个字符的转换其状态，若字符结束时自动机处在其接受状态，则表示此字符串被其接受。经过观察可知，此图中的自动机能接受的字符串为 &#8220;ab&#8221;, &#8220;abb&#8221;, &#8220;abbb&#8221;, ... ，也就是说，此自动机与正则表达式 <strong>ab+</strong> 是等价的。</p>
 <p>简单的有限状态自动机可以通过上一小节的 <strong>与、连接和重复</strong> 搭建出复杂的自动机。数学家们已经证明了：任何一个正则表达式都有一个等价的有限状态自动机，任何一个有限状态自动机也有一个等价的正则表达式。</p>

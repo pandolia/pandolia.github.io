@@ -334,7 +334,7 @@ continue 和 break 呢？将 continue 换成 jmp _beg_while，break 换成 jmp _
 
 终端内容如下：
 
-.. image:: /_images/ch5/jfactor.png
+.. image:: /images/ch5/jfactor.png
 	:height: 205px
 	:width:  979px
 

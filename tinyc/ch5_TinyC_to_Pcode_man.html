@@ -8,8 +8,8 @@
     
     <title>第05章 手工编译 TinyC &mdash; 自己动手写编译器</title>
     
-    <link rel="stylesheet" href="_static/default.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="static/default.css" type="text/css" />
+    <link rel="stylesheet" href="static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
@@ -20,9 +20,9 @@
         HAS_SOURCE:  true
       };
     </script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/underscore.js"></script>
+    <script type="text/javascript" src="static/doctools.js"></script>
     <link rel="top" title="自己动手写编译器" href="index.html" />
     <link rel="next" title="第06章 编译器基本流程" href="ch6_compiler_overview.html" />
     <link rel="prev" title="第04章 中间代码 Pcode (下)" href="ch4_Pcode_syntax_b.html" /> 
@@ -315,7 +315,7 @@ FUNC @factor:
 ENDFUNC
 </pre></div>
 </div>
-<p>够长把，写完后是不是觉得很累？将以上代码另存为 <a class="reference download internal" href="_downloads/factor.asm"><tt class="xref download docutils literal"><span class="pre">factor.asm</span></tt></a>，存在终端当前目录（此目录中需有 pysim.py 文件），在终端中输入：</p>
+<p>够长把，写完后是不是觉得很累？将以上代码另存为 <a class="reference download internal" href="downloads/factor.asm"><tt class="xref download docutils literal"><span class="pre">factor.asm</span></tt></a>，存在终端当前目录（此目录中需有 pysim.py 文件），在终端中输入：</p>
 <div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>python pysim.py factor.asm -a
 </pre></div>
 </div>
@@ -332,7 +332,7 @@ ENDFUNC
 </pre></div>
 </div>
 <p>终端内容如下：</p>
-<a class="reference internal image-reference" href="_images/jfactor.png"><img alt="_images/jfactor.png" src="_images/jfactor.png" style="width: 979px; height: 205px;" /></a>
+<a class="reference internal image-reference" href="images/jfactor.png"><img alt="images/jfactor.png" src="images/jfactor.png" style="width: 979px; height: 205px;" /></a>
 <p><strong>图5.1 factor.asm程序单步执行界面</strong></p>
 <p>可以看到在模拟器自动在程序的第 1 、 2 行添加了 <strong>$main</strong> 和 <strong>exit ~</strong>，这就是 <strong>-a</strong> 和 <strong>-da</strong> 的作用。这样模拟器就会默认以 <strong>main</strong> 函数为入口了。</p>
 <p><strong>第 5 章完</strong></p>

@@ -8,8 +8,8 @@
     
     <title>第14章 TinyC 前端 &mdash; 自己动手写编译器</title>
     
-    <link rel="stylesheet" href="_static/default.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="static/default.css" type="text/css" />
+    <link rel="stylesheet" href="static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
@@ -20,9 +20,9 @@
         HAS_SOURCE:  true
       };
     </script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/underscore.js"></script>
+    <script type="text/javascript" src="static/doctools.js"></script>
     <link rel="top" title="自己动手写编译器" href="index.html" />
     <link rel="next" title="第15章 TinyC 后端" href="ch15_tinyc_backend.html" />
     <link rel="prev" title="第13章 用 bison 做语法分析" href="ch13_bison.html" /> 
@@ -52,7 +52,7 @@
 <div class="section" id="id1">
 <h2>14.1 第 0.1 版<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
 <p>首先对上一章的雏形版本稍微升级一下，增加变量声明和 print 语句，一共有 5 个文件：</p>
-<p>词法分析文件： <a class="reference download internal" href="_downloads/scanner1.l"><tt class="xref download docutils literal"><span class="pre">scanner.l</span></tt></a></p>
+<p>词法分析文件： <a class="reference download internal" href="downloads/scanner1.l"><tt class="xref download docutils literal"><span class="pre">scanner.l</span></tt></a></p>
 <div class="highlight-c"><div class="highlight"><pre>%{
 #define YYSTYPE char *
 #include &quot;y.tab.h&quot;
@@ -100,7 +100,7 @@ void yyerror(const char *msg) {
 }
 </pre></div>
 </div>
-<p>语法分析文件： <a class="reference download internal" href="_downloads/parser1.y"><tt class="xref download docutils literal"><span class="pre">parser.y</span></tt></a></p>
+<p>语法分析文件： <a class="reference download internal" href="downloads/parser1.y"><tt class="xref download docutils literal"><span class="pre">parser.y</span></tt></a></p>
 <div class="highlight-c"><div class="highlight"><pre>%{
 #include &lt;stdio.h&gt;
 #include &lt;stdlib.h&gt;
@@ -164,7 +164,7 @@ int main() {
 }
 </pre></div>
 </div>
-<p>makefile 文件： <a class="reference download internal" href="_downloads/makefile1"><tt class="xref download docutils literal"><span class="pre">makefile</span></tt></a></p>
+<p>makefile 文件： <a class="reference download internal" href="downloads/makefile1"><tt class="xref download docutils literal"><span class="pre">makefile</span></tt></a></p>
 <div class="highlight-makefile"><div class="highlight"><pre><span class="nv">OUT</span>      <span class="o">=</span> tcc
 <span class="nv">TESTFILE</span> <span class="o">=</span> test.c
 <span class="nv">SCANNER</span>  <span class="o">=</span> scanner.l
@@ -200,7 +200,7 @@ int main() {
 	bison -vdty <span class="nv">$&lt;</span>
 </pre></div>
 </div>
-<p>测试文件： <a class="reference download internal" href="_downloads/test1.c"><tt class="xref download docutils literal"><span class="pre">test.c</span></tt></a></p>
+<p>测试文件： <a class="reference download internal" href="downloads/test1.c"><tt class="xref download docutils literal"><span class="pre">test.c</span></tt></a></p>
 <div class="highlight-c"><div class="highlight"><pre><span class="kt">int</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">d</span><span class="p">;</span>
 <span class="n">a</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">2</span> <span class="p">);</span>
 <span class="n">c</span> <span class="o">=</span> <span class="mi">5</span><span class="p">;</span>
@@ -210,7 +210,7 @@ int main() {
 <span class="n">print</span><span class="p">(</span><span class="s">&quot;a = %d, b = %d, c = %d, d = %d&quot;</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">d</span><span class="p">);</span>
 </pre></div>
 </div>
-<p>Pcode 模拟器： <a class="reference download internal" href="_downloads/pysim.py"><tt class="xref download docutils literal"><span class="pre">pysim.py</span></tt></a> ，已经在第 4 章中介绍了。</p>
+<p>Pcode 模拟器： <a class="reference download internal" href="downloads/pysim.py"><tt class="xref download docutils literal"><span class="pre">pysim.py</span></tt></a> ，已经在第 4 章中介绍了。</p>
 <p>这个版本在上一章的雏形版本的基础上，进行了以下扩充：</p>
 <blockquote>
 <div><p>词法分析文件中：</p>
@@ -261,7 +261,7 @@ print &quot;a = %d, b = %d, c = %d, d = %d&quot;
 <div class="section" id="id2">
 <h2>14.2 第 0.5 版<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
 <p>在第 0.1 版的基础上升级，增加函数定义及调用语句、注释等功能，一共有 5 个文件：</p>
-<p>词法分析文件： <a class="reference download internal" href="_downloads/scanner2.l"><tt class="xref download docutils literal"><span class="pre">scanner.l</span></tt></a></p>
+<p>词法分析文件： <a class="reference download internal" href="downloads/scanner2.l"><tt class="xref download docutils literal"><span class="pre">scanner.l</span></tt></a></p>
 <div class="highlight-c"><div class="highlight"><pre>%{
 #define YYSTYPE char *
 #include &quot;y.tab.h&quot;
@@ -324,7 +324,7 @@ void yyerror(const char *msg) {
 }
 </pre></div>
 </div>
-<p>语法分析文件： <a class="reference download internal" href="_downloads/parser2.y"><tt class="xref download docutils literal"><span class="pre">parser.y</span></tt></a></p>
+<p>语法分析文件： <a class="reference download internal" href="downloads/parser2.y"><tt class="xref download docutils literal"><span class="pre">parser.y</span></tt></a></p>
 <div class="highlight-c"><div class="highlight"><pre>%{
 #include &lt;stdio.h&gt;
 #include &lt;stdlib.h&gt;
@@ -447,8 +447,8 @@ int main() {
 }
 </pre></div>
 </div>
-<p>makefile 文件： <a class="reference download internal" href="_downloads/makefile2"><tt class="xref download docutils literal"><span class="pre">makefile</span></tt></a>， 和第 0.1 版本中唯一不同的只有 &#8220;python pysim.py $&lt; -a&#8221; 那一行有一个 <strong>&#8220;-a&#8221;</strong> 。</p>
-<p>测试文件： <a class="reference download internal" href="_downloads/test2.c"><tt class="xref download docutils literal"><span class="pre">test.c</span></tt></a></p>
+<p>makefile 文件： <a class="reference download internal" href="downloads/makefile2"><tt class="xref download docutils literal"><span class="pre">makefile</span></tt></a>， 和第 0.1 版本中唯一不同的只有 &#8220;python pysim.py $&lt; -a&#8221; 那一行有一个 <strong>&#8220;-a&#8221;</strong> 。</p>
+<p>测试文件： <a class="reference download internal" href="downloads/test2.c"><tt class="xref download docutils literal"><span class="pre">test.c</span></tt></a></p>
 <div class="highlight-c"><div class="highlight"><pre><span class="c1">// tiny c test file</span>
 
 <span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
@@ -471,7 +471,7 @@ int main() {
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>Pcode 模拟器： <a class="reference download internal" href="_downloads/pysim1.py"><tt class="xref download docutils literal"><span class="pre">pysim.py</span></tt></a> ，已经在第 4 章中介绍了。</p>
+<p>Pcode 模拟器： <a class="reference download internal" href="downloads/pysim1.py"><tt class="xref download docutils literal"><span class="pre">pysim.py</span></tt></a> ，已经在第 4 章中介绍了。</p>
 <p>这个版本在第 0.1 版本的基础上，进行了以下扩充：</p>
 <blockquote>
 <div><p>词法分析文件中：</p>
@@ -541,7 +541,7 @@ a = sum(c, d) = 6, b = sum(a, d) = 10
 <div class="section" id="id3">
 <h2>14.3 第 1.0 版<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
 <p>继续在第 0.5 版的基础上升级，增加 if 和 while 语句、比较运算符和逻辑运算符以及 readint 命令，就形成了完整的 TinyC 前端。一共有 7 个文件：</p>
-<p>词法分析文件： <a class="reference download internal" href="_downloads/scanner3.l"><tt class="xref download docutils literal"><span class="pre">scanner.l</span></tt></a></p>
+<p>词法分析文件： <a class="reference download internal" href="downloads/scanner3.l"><tt class="xref download docutils literal"><span class="pre">scanner.l</span></tt></a></p>
 <div class="highlight-c"><div class="highlight"><pre>%{
 #define YYSTYPE char *
 #include &quot;y.tab.h&quot;
@@ -616,7 +616,7 @@ void yyerror(const char *msg) {
 }
 </pre></div>
 </div>
-<p>语法分析文件： <a class="reference download internal" href="_downloads/parser3.y"><tt class="xref download docutils literal"><span class="pre">parser.y</span></tt></a></p>
+<p>语法分析文件： <a class="reference download internal" href="downloads/parser3.y"><tt class="xref download docutils literal"><span class="pre">parser.y</span></tt></a></p>
 <div class="highlight-c"><div class="highlight"><pre>%{
 #include &lt;stdio.h&gt;
 #include &lt;stdlib.h&gt;
@@ -838,8 +838,8 @@ int main() {
 }
 </pre></div>
 </div>
-<p>makefile 文件： <a class="reference download internal" href="_downloads/makefile3"><tt class="xref download docutils literal"><span class="pre">makefile</span></tt></a> ，内容和 第 0.5 版是一样的。</p>
-<p>测试文件： <a class="reference download internal" href="_downloads/test3.c"><tt class="xref download docutils literal"><span class="pre">test.c</span></tt></a> ，就是第二章的的示例源程序。</p>
+<p>makefile 文件： <a class="reference download internal" href="downloads/makefile3"><tt class="xref download docutils literal"><span class="pre">makefile</span></tt></a> ，内容和 第 0.5 版是一样的。</p>
+<p>测试文件： <a class="reference download internal" href="downloads/test3.c"><tt class="xref download docutils literal"><span class="pre">test.c</span></tt></a> ，就是第二章的的示例源程序。</p>
 <div class="highlight-c"><div class="highlight"><pre><span class="cp">#include &quot;for_gcc_build.hh&quot; </span><span class="c1">// only for gcc, TinyC will ignore it.</span>
 
 <span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
@@ -866,9 +866,9 @@ int main() {
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>测试文件包：<a class="reference download internal" href="_downloads/samples.zip"><tt class="xref download docutils literal"><span class="pre">samples.zip</span></tt></a> ，包含了 7 个测试文件。</p>
-<p>测试脚本： <a class="reference download internal" href="_downloads/test_samples.sh"><tt class="xref download docutils literal"><span class="pre">test_samples.sh</span></tt></a> 。</p>
-<p>Pcode 模拟器： <a class="reference download internal" href="_downloads/pysim2.py"><tt class="xref download docutils literal"><span class="pre">pysim.py</span></tt></a> 。</p>
+<p>测试文件包：<a class="reference download internal" href="downloads/samples.zip"><tt class="xref download docutils literal"><span class="pre">samples.zip</span></tt></a> ，包含了 7 个测试文件。</p>
+<p>测试脚本： <a class="reference download internal" href="downloads/test_samples.sh"><tt class="xref download docutils literal"><span class="pre">test_samples.sh</span></tt></a> 。</p>
+<p>Pcode 模拟器： <a class="reference download internal" href="downloads/pysim2.py"><tt class="xref download docutils literal"><span class="pre">pysim.py</span></tt></a> 。</p>
 <p>这个版本在第 0.1 版本的基础上，进行了以下扩充：</p>
 <blockquote>
 <div><p>词法分析文件中：</p>
@@ -985,7 +985,7 @@ ENDFUNC
 </pre></div>
 </div>
 <p>和第二章中用 gcc 编译并运行此文件的结果完全一样。</p>
-<p>再把测试文件包里的所有源文件全部测试一遍，将 <a class="reference download internal" href="_downloads/samples.zip"><tt class="xref download docutils literal"><span class="pre">samples.zip</span></tt></a> 解压到 samples 目录下，测试脚本 <a class="reference download internal" href="_downloads/test_samples.sh"><tt class="xref download docutils literal"><span class="pre">test_samples.sh</span></tt></a> 将分别调用 tcc 和 gcc 编译测试文件包中的每一个文件，并分别使用 pysim.py 和 操作系统 运行编译得到的目标文件，内容如下：</p>
+<p>再把测试文件包里的所有源文件全部测试一遍，将 <a class="reference download internal" href="downloads/samples.zip"><tt class="xref download docutils literal"><span class="pre">samples.zip</span></tt></a> 解压到 samples 目录下，测试脚本 <a class="reference download internal" href="downloads/test_samples.sh"><tt class="xref download docutils literal"><span class="pre">test_samples.sh</span></tt></a> 将分别调用 tcc 和 gcc 编译测试文件包中的每一个文件，并分别使用 pysim.py 和 操作系统 运行编译得到的目标文件，内容如下：</p>
 <div class="highlight-bash"><div class="highlight"><pre><span class="k">for</span> src in <span class="k">$(</span>ls samples/*.c<span class="k">)</span>
 <span class="k">do</span>
 	clear

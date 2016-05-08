@@ -8,8 +8,8 @@
     
     <title>第12章 自底向上分析 (下) &mdash; 自己动手写编译器</title>
     
-    <link rel="stylesheet" href="_static/default.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="static/default.css" type="text/css" />
+    <link rel="stylesheet" href="static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
@@ -20,9 +20,9 @@
         HAS_SOURCE:  true
       };
     </script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/underscore.js"></script>
+    <script type="text/javascript" src="static/doctools.js"></script>
     <link rel="top" title="自己动手写编译器" href="index.html" />
     <link rel="next" title="第13章 用 bison 做语法分析" href="ch13_bison.html" />
     <link rel="prev" title="第11章 自底向上分析 (上)" href="ch11_buttom_up_parse_a.html" /> 
@@ -129,7 +129,7 @@
 </div>
 <p>上面的 &#8220;X  –&gt; .aX , a/b&#8221; 是两条形态 &#8220;X  –&gt; .aX , a&#8221; 和 &#8220;X  –&gt; .aX , b&#8221; 的简写。</p>
 <p>还是按上一章的步骤，对语法中的所有符号 X （S&#8217;, S, X, a, b） ，求出 I0 遇到 X 的后继状态 I1 = NEXT(I0, X) ，若 I1 不是空集，则将其添加到状态转移表中，然后不断重复，直到无法生成新的状态，最终的状态转移表的图形如下：</p>
-<a class="reference internal image-reference" href="_images/lr1_1.png"><img alt="_images/lr1_1.png" src="_images/lr1_1.png" style="width: 769px; height: 414px;" /></a>
+<a class="reference internal image-reference" href="images/lr1_1.png"><img alt="images/lr1_1.png" src="images/lr1_1.png" style="width: 769px; height: 414px;" /></a>
 <p><strong>图12.1 状态转移图</strong></p>
 <p>构造动作表 M 的步骤也和上一章的大致一样， M 中的 M[I, X] 表示栈顶状态为 I ，下一个符号为 X 时所应采取的动作，按以下情况确定：</p>
 <blockquote>
@@ -508,10 +508,10 @@ first(S) = first(E) = id
 <div class="section" id="lr-1-lalr-1">
 <h2>12.4 优化的 LR(1) 分析法： LALR(1)<a class="headerlink" href="#lr-1-lalr-1" title="Permalink to this headline">¶</a></h2>
 <p>从前面的内容可以看出， LR(1) 分析法的构造过程十分复杂，且状态和形态的数量都非常之多，即便是本章第一节的仅仅含 4 个产生式的如此简单的例子，也多达 9 个状态和 27 条形态，如下：</p>
-<a class="reference internal image-reference" href="_images/lr1_1.png"><img alt="_images/lr1_1.png" src="_images/lr1_1.png" style="width: 769px; height: 414px;" /></a>
+<a class="reference internal image-reference" href="images/lr1_1.png"><img alt="images/lr1_1.png" src="images/lr1_1.png" style="width: 769px; height: 414px;" /></a>
 <p><strong>图12.2 状态转移图</strong></p>
 <p>上面这个图中， I3 和 I6 几乎是一样的，I4 和 I7 、以及 I8 和 I9 也非常的相似，可以将这样的状态 merge 起来，形成下面这样的状态转移表：</p>
-<a class="reference internal image-reference" href="_images/lr1_2.png"><img alt="_images/lr1_2.png" src="_images/lr1_2.png" style="width: 815px; height: 369px;" /></a>
+<a class="reference internal image-reference" href="images/lr1_2.png"><img alt="images/lr1_2.png" src="images/lr1_2.png" style="width: 815px; height: 369px;" /></a>
 <p><strong>图12.3 状态转移图</strong></p>
 <p>可以看出 merge 后的状态总数少了 3 个，可节省动作表的空间，解析速度也有较大的提高。这种将相似状态 merge 起来的分析法称为 LALR(1) 分析法，这是很多编译器所采用的分析方法。具体的 merge 算法比较复杂，本文档就不介绍了，因为 LALR(1) 分析的基本构造流程和解析流程和 LR(1) 分析法是一样的。</p>
 <p><strong>第 12 章完</strong></p>

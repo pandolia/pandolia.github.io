@@ -55,7 +55,7 @@ Pcode 模拟器是本人用 python 编写的用来运行 Pcode 的程序，下�
 
 之后，终端上就出现了下图所示的内容：
 
-.. image:: /_images/ch4/p_01.png
+.. image:: /images/ch4/p_01.png
 	:height: 855px
 	:width:  975px
 
@@ -69,7 +69,7 @@ Pcode 模拟器是本人用 python 编写的用来运行 Pcode 的程序，下�
 
 现在，让我们敲一下回车，可以看到模拟器运行了一步，终端上的内容变成了下面的：
 
-.. image:: /_images/ch4/p_02.png
+.. image:: /images/ch4/p_02.png
 	:height: 855px
 	:width:  975px
 
@@ -79,7 +79,7 @@ Pcode 模拟器是本人用 python 编写的用来运行 Pcode 的程序，下�
 
 接下来，让我们一步一步的运行代码，细心观察每一步运行后代码区、栈区以及终端区的变化，可以看到随着命令的运行，指令指针一直在向下移动，栈顶指针则随 push / pop /print 等命令不断的上、下移动，终端区则在 print 命令运行后出现了 "a = 3, b = 6" ，程序在 "exit 0" 后退出，整个过程如下：
 
-.. image:: /_images/ch4/animation.gif
+.. image:: /images/ch4/animation.gif
 	:height: 855px
 	:width:  975px
 
@@ -117,11 +117,11 @@ Pcode 虚拟机会将所有以 “ xxx: ” 开始的行记录在其标签表中
 
 jmp 命令运行后 eip 的变化如下，运行后栈保持不变。
 
-.. image:: /_images/ch4/jjmp_01.png
+.. image:: /images/ch4/jjmp_01.png
 	:height: 205px
 	:width:  979px
 
-.. image:: /_images/ch4/jjmp_02.png
+.. image:: /images/ch4/jjmp_02.png
 	:height: 205px
 	:width:  979px
 
@@ -129,21 +129,21 @@ jmp 命令运行后 eip 的变化如下，运行后栈保持不变。
 
 jz 命令运行后 eip 和栈的变化如下，注意无论是否发生跳转，栈顶的元素都将出栈。
 
-.. image:: /_images/ch4/jjz_01.png
+.. image:: /images/ch4/jjz_01.png
 	:height: 205px
 	:width:  979px
 
-.. image:: /_images/ch4/jjz_02.png
+.. image:: /images/ch4/jjz_02.png
 	:height: 205px
 	:width:  979px
 
 **图4.5 jz 命令执行过程（栈顶为 0 时）**
 
-.. image:: /_images/ch4/jjz_03.png
+.. image:: /images/ch4/jjz_03.png
 	:height: 205px
 	:width:  979px
 
-.. image:: /_images/ch4/jjz_04.png
+.. image:: /images/ch4/jjz_04.png
 	:height: 205px
 	:width:  979px
 
@@ -216,7 +216,7 @@ Pcode 虚拟机会将所有用 FUNC 和 ENDFUNC 定义的函数名、函数入�
 
 终端显示如下，注意模拟器自动在 ENDFUNC 的后面加了一句 ret ，这样对于函数体内不写任何 ret 的程序，程序运行到此处也会返回的。
 
-.. image:: /_images/ch4/zz_01.png
+.. image:: /images/ch4/zz_01.png
 	:height: 294px
 	:width:  979px
 
@@ -224,7 +224,7 @@ Pcode 虚拟机会将所有用 FUNC 和 ENDFUNC 定义的函数名、函数入�
 
 再敲3下回车，使程序运行到 $sum 这一行，可以看出此时栈上已经分配并绑定了 3 个变量 a, b, c ，函数的参数 1 和 2 也都压入到栈上了。见下图：
 
-.. image:: /_images/ch4/zz_02.png
+.. image:: /images/ch4/zz_02.png
 	:height: 294px
 	:width:  979px
 
@@ -232,7 +232,7 @@ Pcode 虚拟机会将所有用 FUNC 和 ENDFUNC 定义的函数名、函数入�
 
 下面就要开始调用函数了，让我们再敲 1 下回车，看看发生了什么：
 
-.. image:: /_images/ch4/zz_03.png
+.. image:: /images/ch4/zz_03.png
 	:height: 294px
 	:width:  979px
 
@@ -244,7 +244,7 @@ Pcode 虚拟机会将所有用 FUNC 和 ENDFUNC 定义的函数名、函数入�
 
 我们先把这两个问题放一放，先一步一步运行函数内的命令，到 ret ~ 这一行停下来，见下图：
 
-.. image:: /_images/ch4/zz_04.png
+.. image:: /images/ch4/zz_04.png
 	:height: 294px
 	:width:  979px
 
@@ -252,7 +252,7 @@ Pcode 虚拟机会将所有用 FUNC 和 ENDFUNC 定义的函数名、函数入�
 
 可以看出，此时 a + b 的结果已经计算出来并放到栈顶了，让我们再敲一下回车，执行一下 ret ~ 这条命令，看看发生了什么：
 
-.. image:: /_images/ch4/zz_05.png
+.. image:: /images/ch4/zz_05.png
 	:height: 294px
 	:width:  979px
 

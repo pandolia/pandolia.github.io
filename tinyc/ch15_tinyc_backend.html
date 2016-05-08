@@ -8,8 +8,8 @@
     
     <title>第15章 TinyC 后端 &mdash; 自己动手写编译器</title>
     
-    <link rel="stylesheet" href="_static/default.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="static/default.css" type="text/css" />
+    <link rel="stylesheet" href="static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
@@ -20,9 +20,9 @@
         HAS_SOURCE:  true
       };
     </script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/underscore.js"></script>
+    <script type="text/javascript" src="static/doctools.js"></script>
     <link rel="top" title="自己动手写编译器" href="index.html" />
     <link rel="next" title="第16章 TinyC 编译器" href="ch16_tinyc_compiler.html" />
     <link rel="prev" title="第14章 TinyC 前端" href="ch14_tinyc_frontend.html" /> 
@@ -52,7 +52,7 @@
 <div class="section" id="nasm">
 <h2>15.1 NASM 简介<a class="headerlink" href="#nasm" title="Permalink to this headline">¶</a></h2>
 <p>NASM 全称 The Netwide Assembler ，是一款基于 x86 平台的汇编语言编译程序，其设计初衷是为了实现编译器程序跨平台和模块化的特性。 NASM 支持大量的文件格式，包括 Linux ， BSD ， a.out ， ELF ， COFF ， Mach−O ， Microsoft 16−bit OBJ ， Win32 以及 Win64 ，同时也支持简单的二进制文件生成。它的语法被设计的简单易懂，相较 Intel 的语法更为简单，支持目前已知的所有 x86 架构之上的扩展语法，同时也拥有对宏命令的良好支持。</p>
-<p>用 NASM 编写 Linux 下的 hello world 示例程序 <a class="reference download internal" href="_downloads/hello.nasm"><tt class="xref download docutils literal"><span class="pre">hello.nasm</span></tt></a> 如下：</p>
+<p>用 NASM 编写 Linux 下的 hello world 示例程序 <a class="reference download internal" href="downloads/hello.nasm"><tt class="xref download docutils literal"><span class="pre">hello.nasm</span></tt></a> 如下：</p>
 <div class="highlight-nasm"><div class="highlight"><pre>GLOBAL _start
 
 [SECTION .TEXT]
@@ -80,7 +80,7 @@ Hello, world!
 </pre></div>
 </div>
 <p>Linux 32位可执行程序中，用 &#8220;INT 0x80&#8221; 指令来执行一个系统调用，用 &#8220;EAX&#8221; 指定系统调用编号，用 &#8220;EBX, ECX, EDX&#8221; 来传递系统调用需要的参数。上面这段汇编代码中，首先执行了编号为 4 的系统调用（write），向 stdout 写了一个长为 len 的字符串（msg），之后，执行编号为 1 的系统调用（exit）。</p>
-<p>NASM 拥有对宏命令的良好支持，可以简化很多重复代码的编写。对于上面这个程序，可以编写两个名为 print 和 exit 的宏用来重复使用。新建一个 <a class="reference download internal" href="_downloads/macro.inc"><tt class="xref download docutils literal"><span class="pre">macro.inc</span></tt></a> 文件，内容如下：</p>
+<p>NASM 拥有对宏命令的良好支持，可以简化很多重复代码的编写。对于上面这个程序，可以编写两个名为 print 和 exit 的宏用来重复使用。新建一个 <a class="reference download internal" href="downloads/macro.inc"><tt class="xref download docutils literal"><span class="pre">macro.inc</span></tt></a> 文件，内容如下：</p>
 <div class="highlight-nasm"><div class="highlight"><pre>%MACRO print 1
     [SECTION .DATA]
         %%STRING:   DB %1, 10
@@ -105,7 +105,7 @@ GLOBAL _start
 _start:
 </pre></div>
 </div>
-<p>新的 <a class="reference download internal" href="_downloads/hello1.nasm"><tt class="xref download docutils literal"><span class="pre">hello.nasm</span></tt></a> 如下：</p>
+<p>新的 <a class="reference download internal" href="downloads/hello1.nasm"><tt class="xref download docutils literal"><span class="pre">hello.nasm</span></tt></a> 如下：</p>
 <div class="highlight-nasm"><div class="highlight"><pre><span class="cp">%include &quot;macro.inc&quot;</span>
 
 <span class="nf">print</span> <span class="s">&quot;Hello world!&quot;</span>
@@ -163,7 +163,7 @@ INT 0x80
 <h2>15.2 用 NASM 宏将 Pcode 命令翻译成 x86 指令 （ print 命令）<a class="headerlink" href="#nasm-pcode-x86-print" title="Permalink to this headline">¶</a></h2>
 <p>上面简单介绍了 NASM 以及它的强大的宏命令，可以实现复杂多样的宏展开。从本节开始，将编写一系列的宏定义，将中间代码 Pcode 命令展开为 x86 汇编指令。建议读者先回顾一下第 3、4 章的内容，再来看本章接下来的内容。</p>
 <p>在开始编写宏定义之前，首先说明一下两个约定： （1） 所有 Pcode 命令以及相应的宏名称都小写（ FUNC / ENDFUNC 命令除外），而所有 x86 汇编指令都大写； （2） 本书中的 x86 汇编指令，均用 NASM 语法书写。</p>
-<p>首先翻译 Pcode 命令中的 print 命令。上一节中定义的 print 宏已经和 Pcode 中的 print 命令在使用的格式上是一模一样的了，但是它还不能实现 <strong>%d</strong> 格式化输出。我们最终的 print 宏需要使下面这段代码（ <a class="reference download internal" href="_downloads/print.nasm"><tt class="xref download docutils literal"><span class="pre">print.nasm</span></tt></a> ）的输出为 &#8220;a = 1, b = 2, c = 3&#8221; ：</p>
+<p>首先翻译 Pcode 命令中的 print 命令。上一节中定义的 print 宏已经和 Pcode 中的 print 命令在使用的格式上是一模一样的了，但是它还不能实现 <strong>%d</strong> 格式化输出。我们最终的 print 宏需要使下面这段代码（ <a class="reference download internal" href="downloads/print.nasm"><tt class="xref download docutils literal"><span class="pre">print.nasm</span></tt></a> ）的输出为 &#8220;a = 1, b = 2, c = 3&#8221; ：</p>
 <div class="highlight-nasm"><div class="highlight"><pre><span class="nf">PUSH</span> <span class="kt">DWORD</span> <span class="mi">1</span>
 <span class="nf">PUSH</span> <span class="kt">DWORD</span> <span class="mi">2</span>
 <span class="nf">PUSH</span> <span class="kt">DWORD</span> <span class="mi">3</span>
@@ -172,7 +172,7 @@ INT 0x80
 <span class="nf">exit</span> <span class="mi">0</span>
 </pre></div>
 </div>
-<p>直接看代码吧。宏文件 <a class="reference download internal" href="_downloads/macro1.inc"><tt class="xref download docutils literal"><span class="pre">macro.inc</span></tt></a> ：</p>
+<p>直接看代码吧。宏文件 <a class="reference download internal" href="downloads/macro1.inc"><tt class="xref download docutils literal"><span class="pre">macro.inc</span></tt></a> ：</p>
 <div class="highlight-nasm"><div class="highlight"><pre>%MACRO print 1
     [SECTION .DATA]
         %%STRING:   DB %1, 10, 0
@@ -197,7 +197,7 @@ _start:
 </pre></div>
 </div>
 <p>从宏文件可以看出， print 宏将会被展开为一个 PUSH 命令，一个函数调用命令（CALL PRINT），以及清栈的命令。具体的输出工作将由 PRINT 函数来处理，同时 PRINT 函数还需要返回字符串中含有的 <strong>%d</strong> 的个数，这样函数调用完毕后可以根据返回值（保存在 EAX 中）来进行清栈（这就是 &#8220;SHL EAX, 2&#8221; 和 &#8220;ADD ESP, EAX&#8221; 的作用）。</p>
-<p>PRINT 函数可以用 C 语言来编写，然后编译成库文件，最后和目标文件一起链接成可执行文件。PRINT 函数源代码如下（ <a class="reference download internal" href="_downloads/tio.c"><tt class="xref download docutils literal"><span class="pre">tio.c</span></tt></a> ）：</p>
+<p>PRINT 函数可以用 C 语言来编写，然后编译成库文件，最后和目标文件一起链接成可执行文件。PRINT 函数源代码如下（ <a class="reference download internal" href="downloads/tio.c"><tt class="xref download docutils literal"><span class="pre">tio.c</span></tt></a> ）：</p>
 <div class="highlight-c"><div class="highlight"><pre><span class="kt">void</span> <span class="nf">SYS_PRINT</span><span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="n">string</span><span class="p">,</span> <span class="kt">int</span> <span class="n">len</span><span class="p">);</span>
 
 <span class="cp">#define BUFLEN 1024</span>
@@ -321,13 +321,13 @@ ar -crv libtio.a tio.o
 <div class="section" id="pcode-readint">
 <h2>15.3 翻译 Pcode 中的 readint 命令<a class="headerlink" href="#pcode-readint" title="Permalink to this headline">¶</a></h2>
 <p>readint 命令的翻译和 print 命令的翻译方法差不多，也需要利用 C 语言编写库函数。以下为相关的代码：</p>
-<p>测试代码 <a class="reference download internal" href="_downloads/test.nasm"><tt class="xref download docutils literal"><span class="pre">test.nasm</span></tt></a> ：</p>
+<p>测试代码 <a class="reference download internal" href="downloads/test.nasm"><tt class="xref download docutils literal"><span class="pre">test.nasm</span></tt></a> ：</p>
 <div class="highlight-nasm"><div class="highlight"><pre><span class="nf">readint</span> <span class="s">&quot;Please input an number: &quot;</span>
 <span class="nf">print</span> <span class="s">&quot;Your input is: %d&quot;</span>
 <span class="nf">exit</span> <span class="mi">0</span>
 </pre></div>
 </div>
-<p>readint 宏，在 <a class="reference download internal" href="_downloads/macro2.inc"><tt class="xref download docutils literal"><span class="pre">macro.inc</span></tt></a> 文件中：</p>
+<p>readint 宏，在 <a class="reference download internal" href="downloads/macro2.inc"><tt class="xref download docutils literal"><span class="pre">macro.inc</span></tt></a> 文件中：</p>
 <div class="highlight-nasm"><div class="highlight"><pre>%MACRO readint 1
     [SECTION .DATA]
         %%STRING:   DB %1, 0
@@ -339,7 +339,7 @@ ar -crv libtio.a tio.o
 EXTERN PRINT, READINT
 </pre></div>
 </div>
-<p>READINT 库函数，在 <a class="reference download internal" href="_downloads/tio1.c"><tt class="xref download docutils literal"><span class="pre">tio.c</span></tt></a> 文件中：</p>
+<p>READINT 库函数，在 <a class="reference download internal" href="downloads/tio1.c"><tt class="xref download docutils literal"><span class="pre">tio.c</span></tt></a> 文件中：</p>
 <div class="highlight-c"><div class="highlight"><pre><span class="kt">int</span> <span class="nf">STRLEN</span><span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="n">s</span><span class="p">);</span>
 <span class="kt">int</span> <span class="nf">SYS_READ</span><span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="n">buf</span><span class="p">,</span> <span class="kt">int</span> <span class="n">len</span><span class="p">);</span>
 
@@ -406,7 +406,7 @@ EXTERN PRINT, READINT
 <span class="p">}</span>
 </pre></div>
 </div>
-<p><a class="reference download internal" href="_downloads/makefile4"><tt class="xref download docutils literal"><span class="pre">makefile</span></tt></a> 文件：</p>
+<p><a class="reference download internal" href="downloads/makefile4"><tt class="xref download docutils literal"><span class="pre">makefile</span></tt></a> 文件：</p>
 <div class="highlight-makefile"><div class="highlight"><pre><span class="nf">test</span><span class="o">:</span> <span class="n">test</span>.<span class="n">o</span> <span class="n">libtio</span>.<span class="n">a</span>
 	ld -m elf_i386 -o <span class="nb">test </span>test.o -L. -ltio
 
@@ -490,8 +490,8 @@ Your input is: 15
 <span class="cp">%ENDMACRO</span>
 </pre></div>
 </div>
-<p>所有宏定义见 <a class="reference download internal" href="_downloads/macro3.inc"><tt class="xref download docutils literal"><span class="pre">macro.inc</span></tt></a> 。</p>
-<p>测试文件   <a class="reference download internal" href="_downloads/test1.nasm"><tt class="xref download docutils literal"><span class="pre">test.nasm</span></tt></a> ：</p>
+<p>所有宏定义见 <a class="reference download internal" href="downloads/macro3.inc"><tt class="xref download docutils literal"><span class="pre">macro.inc</span></tt></a> 。</p>
+<p>测试文件   <a class="reference download internal" href="downloads/test1.nasm"><tt class="xref download docutils literal"><span class="pre">test.nasm</span></tt></a> ：</p>
 <div class="highlight-nasm"><div class="highlight"><pre><span class="nf">MOV</span> <span class="nb">EBP</span><span class="p">,</span> <span class="nb">ESP</span>
 <span class="nf">SUB</span> <span class="nb">ESP</span><span class="p">,</span> <span class="mi">8</span>
 <span class="cp">%define a [EBP-4]</span>
@@ -532,7 +532,7 @@ Your input is: 15
     <span class="nf">exit</span> <span class="mi">0</span>
 </pre></div>
 </div>
-<p>库函数文件（ <a class="reference download internal" href="_downloads/tio1.c"><tt class="xref download docutils literal"><span class="pre">tio.c</span></tt></a> ）和 <a class="reference download internal" href="_downloads/makefile4"><tt class="xref download docutils literal"><span class="pre">makefile</span></tt></a> 文件，和上一节是一样的。</p>
+<p>库函数文件（ <a class="reference download internal" href="downloads/tio1.c"><tt class="xref download docutils literal"><span class="pre">tio.c</span></tt></a> ）和 <a class="reference download internal" href="downloads/makefile4"><tt class="xref download docutils literal"><span class="pre">makefile</span></tt></a> 文件，和上一节是一样的。</p>
 <p>将以上四个文件下载下来放到用一个目录，输入 make run 即可编译并运行测试代码。运行过程如下：</p>
 <div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>make run
 ...
@@ -597,7 +597,7 @@ FUNC @sum:
 ENDFUNC
 </pre></div>
 </div>
-<p>最难的部分在于如何避免不同函数中的同名变量的冲突。 NASM 的宏虽然强大，但无法满足如此复杂的需要。为降低翻译的难度，将以上 Pcode 稍微改写一下，保存为 <a class="reference download internal" href="_downloads/test.pcode"><tt class="xref download docutils literal"><span class="pre">test.pcode</span></tt></a> ：</p>
+<p>最难的部分在于如何避免不同函数中的同名变量的冲突。 NASM 的宏虽然强大，但无法满足如此复杂的需要。为降低翻译的难度，将以上 Pcode 稍微改写一下，保存为 <a class="reference download internal" href="downloads/test.pcode"><tt class="xref download docutils literal"><span class="pre">test.pcode</span></tt></a> ：</p>
 <div class="highlight-nasm"><div class="highlight"><pre>; int main() { 
 FUNC @main:
     ; int a;
@@ -637,7 +637,7 @@ FUNC @sum:
 <span class="hll">ENDFUNC@sum
 </span></pre></div>
 </div>
-<p>首先编写 FUNC 和 ret 宏，放到 <a class="reference download internal" href="_downloads/macro4.inc"><tt class="xref download docutils literal"><span class="pre">macro.inc</span></tt></a> 文件中，同时在该文件的最后增加调用 &#64;main 函数及退出的指令：</p>
+<p>首先编写 FUNC 和 ret 宏，放到 <a class="reference download internal" href="downloads/macro4.inc"><tt class="xref download docutils literal"><span class="pre">macro.inc</span></tt></a> 文件中，同时在该文件的最后增加调用 &#64;main 函数及退出的指令：</p>
 <div class="highlight-nasm"><div class="highlight"><pre>%MACRO FUNC 1
     %1
     PUSH EBP
@@ -666,7 +666,7 @@ _start:
     exit [ESP]
 </pre></div>
 </div>
-<p>然后，编写 main.var, ENDFUNC&#64;main, $sum, sum.arg, sum.var 和 ENDFUNC&#64;sum 宏，保存为 <a class="reference download internal" href="_downloads/test.funcmacro"><tt class="xref download docutils literal"><span class="pre">test.funcmacro</span></tt></a> ：</p>
+<p>然后，编写 main.var, ENDFUNC&#64;main, $sum, sum.arg, sum.var 和 ENDFUNC&#64;sum 宏，保存为 <a class="reference download internal" href="downloads/test.funcmacro"><tt class="xref download docutils literal"><span class="pre">test.funcmacro</span></tt></a> ：</p>
 <div class="highlight-nasm"><div class="highlight"><pre>; ==== begin function `main` ====
 %define main.varc 1
 
@@ -728,12 +728,12 @@ _start:
     RET
 </pre></div>
 </div>
-<p>最后，改写 <a class="reference download internal" href="_downloads/makefile5"><tt class="xref download docutils literal"><span class="pre">makefile</span></tt></a> 文件中的以下两行：</p>
+<p>最后，改写 <a class="reference download internal" href="downloads/makefile5"><tt class="xref download docutils literal"><span class="pre">makefile</span></tt></a> 文件中的以下两行：</p>
 <div class="highlight-makefile"><div class="highlight"><pre><span class="nf">test.o</span><span class="o">:</span> <span class="n">test</span>.<span class="n">pcode</span> <span class="n">test</span>.<span class="n">funcmacro</span> <span class="n">macro</span>.<span class="n">inc</span>
 	nasm -f elf32 -P<span class="s2">&quot;macro.inc&quot;</span> -P<span class="s2">&quot;test.funcmacro&quot;</span> -o test.o test.pcode
 </pre></div>
 </div>
-<p>将以上四个文件以及库函数文件 <a class="reference download internal" href="_downloads/tio2.c"><tt class="xref download docutils literal"><span class="pre">tio.c</span></tt></a> 放到用一个目录，输入 make run 即可编译并运行测试代码。</p>
+<p>将以上四个文件以及库函数文件 <a class="reference download internal" href="downloads/tio2.c"><tt class="xref download docutils literal"><span class="pre">tio.c</span></tt></a> 放到用一个目录，输入 make run 即可编译并运行测试代码。</p>
 <p>至此所有 Pcode 命令对应的 NASM 宏编写完毕。</p>
 <p><strong>第 15 章完</strong></p>
 </div>

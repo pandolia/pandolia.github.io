@@ -8,8 +8,8 @@
     
     <title>第13章 用 bison 做语法分析 &mdash; 自己动手写编译器</title>
     
-    <link rel="stylesheet" href="_static/default.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="static/default.css" type="text/css" />
+    <link rel="stylesheet" href="static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
@@ -20,9 +20,9 @@
         HAS_SOURCE:  true
       };
     </script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/underscore.js"></script>
+    <script type="text/javascript" src="static/doctools.js"></script>
     <link rel="top" title="自己动手写编译器" href="index.html" />
     <link rel="next" title="第14章 TinyC 前端" href="ch14_tinyc_frontend.html" />
     <link rel="prev" title="第12章 自底向上分析 (下)" href="ch12_buttom_up_parse_b.html" /> 
@@ -78,7 +78,7 @@ int yywrap(void) {
 }
 </pre></div>
 </div>
-<p>将此文件另存为 <a class="reference download internal" href="_downloads/calc.l"><tt class="xref download docutils literal"><span class="pre">calc.l</span></tt></a> 。注意此文件中的 <strong>%%</strong> 、 <strong>%{</strong> 、 <strong>%}</strong> 的前面不能有任何空格。</p>
+<p>将此文件另存为 <a class="reference download internal" href="downloads/calc.l"><tt class="xref download docutils literal"><span class="pre">calc.l</span></tt></a> 。注意此文件中的 <strong>%%</strong> 、 <strong>%{</strong> 、 <strong>%}</strong> 的前面不能有任何空格。</p>
 <p>再新建一个文本文件，输入以下内容：</p>
 <div class="highlight-c"><div class="highlight"><pre>%{
 #include &lt;stdio.h&gt;
@@ -111,7 +111,7 @@ int main() {
 }
 </pre></div>
 </div>
-<p>将此文件另存为 <a class="reference download internal" href="_downloads/calc.y"><tt class="xref download docutils literal"><span class="pre">calc.y</span></tt></a> 。注意此文件中的 <strong>%%</strong> 、 <strong>%{</strong> 、 <strong>%}</strong> 的前面也不能有任何空格。</p>
+<p>将此文件另存为 <a class="reference download internal" href="downloads/calc.y"><tt class="xref download docutils literal"><span class="pre">calc.y</span></tt></a> 。注意此文件中的 <strong>%%</strong> 、 <strong>%{</strong> 、 <strong>%}</strong> 的前面也不能有任何空格。</p>
 <p>将前面两个文件都放在终端的当前目录，再在终端输入：</p>
 <div class="highlight-bash"><div class="highlight"><pre>bison -vdty calc.y
 </pre></div>
@@ -259,7 +259,7 @@ State 1
 <div class="section" id="bison-2">
 <h2>13.3 bison 示例 2<a class="headerlink" href="#bison-2" title="Permalink to this headline">¶</a></h2>
 <p>再来看一个稍微复杂一点的示例，一共有 4 个文件：</p>
-<p>词法分析文件： <a class="reference download internal" href="_downloads/scanner.l"><tt class="xref download docutils literal"><span class="pre">scanner.l</span></tt></a></p>
+<p>词法分析文件： <a class="reference download internal" href="downloads/scanner.l"><tt class="xref download docutils literal"><span class="pre">scanner.l</span></tt></a></p>
 <div class="highlight-c"><div class="highlight"><pre>%{
 #define YYSTYPE char *
 #include &quot;y.tab.h&quot;
@@ -298,7 +298,7 @@ void yyerror(const char *msg) {
 }
 </pre></div>
 </div>
-<p>语法分析文件： <a class="reference download internal" href="_downloads/parser.y"><tt class="xref download docutils literal"><span class="pre">parser.y</span></tt></a></p>
+<p>语法分析文件： <a class="reference download internal" href="downloads/parser.y"><tt class="xref download docutils literal"><span class="pre">parser.y</span></tt></a></p>
 <div class="highlight-c"><div class="highlight"><pre>%{
 #include &lt;stdio.h&gt;
 #include &lt;stdlib.h&gt;
@@ -338,7 +338,7 @@ int main() {
 }
 </pre></div>
 </div>
-<p>makefile 文件： <a class="reference download internal" href="_downloads/makefile"><tt class="xref download docutils literal"><span class="pre">makefile</span></tt></a></p>
+<p>makefile 文件： <a class="reference download internal" href="downloads/makefile"><tt class="xref download docutils literal"><span class="pre">makefile</span></tt></a></p>
 <div class="highlight-makefile"><div class="highlight"><pre><span class="nv">CC</span> <span class="o">=</span> gcc
 <span class="nv">OUT</span> <span class="o">=</span> tcc
 <span class="nv">OBJ</span> <span class="o">=</span> lex.yy.o y.tab.o
@@ -363,7 +363,7 @@ int main() {
 	bison -vdty <span class="nv">$&lt;</span>
 </pre></div>
 </div>
-<p>测试文件： <a class="reference download internal" href="_downloads/test.c"><tt class="xref download docutils literal"><span class="pre">test.c</span></tt></a></p>
+<p>测试文件： <a class="reference download internal" href="downloads/test.c"><tt class="xref download docutils literal"><span class="pre">test.c</span></tt></a></p>
 <div class="highlight-c"><div class="highlight"><pre><span class="n">a</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">2</span> <span class="p">);</span>
 <span class="n">b</span> <span class="o">=</span> <span class="n">c</span> <span class="o">+</span> <span class="n">d</span><span class="p">;</span>
 <span class="n">e</span> <span class="o">=</span> <span class="n">f</span> <span class="o">+</span> <span class="mi">7</span> <span class="o">*</span> <span class="mi">8</span> <span class="o">/</span> <span class="mi">9</span><span class="p">;</span>
