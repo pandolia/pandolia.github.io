@@ -1,0 +1,280 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>第02章 源程序 TinyC &mdash; 自己动手写编译器</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="自己动手写编译器" href="index.html" />
+    <link rel="next" title="第03章 中间代码 Pcode (上)" href="ch3_Pcode_syntax_a.html" />
+    <link rel="prev" title="第01章 概 述" href="ch1_overview.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="ch3_Pcode_syntax_a.html" title="第03章 中间代码 Pcode (上)"
+             accesskey="N">next</a></li>
+        <li class="right" >
+          <a href="ch1_overview.html" title="第01章 概 述"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">自己动手写编译器</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="tinyc">
+<h1>第02章 源程序 TinyC<a class="headerlink" href="#tinyc" title="Permalink to this headline">¶</a></h1>
+<p>TinyC 只用到了 C 语言中非常小的一部分，是 C 语言中非常小的子集，所有 C 语法的规则均适用于 TinyC 语法， TinyC 源程序可直接用 gcc 编译。 C 语法本书不介绍，仅介绍 TinyC 特有的部分。</p>
+<div class="section" id="id1">
+<h2>2.1 数据类型及源程序结构<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<p>TinyC 中变量只有 int 一种数据类型（32位），函数的返回值可以声明为 int 和 void 两种类型，但编译器会自动为 void 函数返回一个 int 值。不支持全局变量，只有局部变量，变量须先声明再使用，且变量声明必须放在函数体的最前面，不支持声明变量的时候赋初值。</p>
+<p>不支持函数原型声明，函数声明必须和定义在一起，函数无需先定义再使用。整个程序必须有一个不带参数的 <strong>main</strong> 函数，此为程序的入口。</p>
+<p>“//...” 以及 “#...” 为单行注释。不支持 #include 等预处理命令，不支持多行注释。</p>
+<p>典型的 TinyC 源程序是由一个个的函数定义组成的，如下：</p>
+<div class="highlight-text"><div class="highlight"><pre>int main() {
+    int a, b;
+    int c, d;   // 变量声明必须放在函数体的最前面
+    a = 0;
+    ...
+}
+
+void func1(int a, int b) {
+    ...
+}
+
+...
+</pre></div>
+</div>
+<p>TinyC 函数体内的语句只有四种：赋值语句、函数调用语句、控制语句（ if 语句）和循环语句（ while 语句）。赋值语句中，左边为变量名，右边为表达式，一个只含有表达式（函数调用除外）的语句是不合法的，如下：</p>
+<div class="highlight-c"><div class="highlight"><pre><span class="n">a</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">a</span><span class="p">;</span>              <span class="c1">// 合法</span>
+<span class="n">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">);</span>              <span class="c1">// 合法</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">a</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span> <span class="p">...</span> <span class="p">}</span>      <span class="c1">// 合法</span>
+<span class="k">while</span> <span class="p">(</span><span class="n">a</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span> <span class="p">...</span> <span class="p">}</span>   <span class="c1">// 合法</span>
+<span class="mi">1</span><span class="p">;</span>                      <span class="c1">// 不合法</span>
+<span class="mi">1</span> <span class="o">+</span> <span class="mi">2</span><span class="p">;</span>                  <span class="c1">// 不合法</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id2">
+<h2>2.2 数据运算<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<p>TinyC 支持以下算术、比较和逻辑运算：</p>
+<div class="highlight-c"><div class="highlight"><pre><span class="o">+</span><span class="p">,</span> <span class="o">-</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="o">%</span><span class="p">,</span> <span class="o">==</span><span class="p">,</span> <span class="o">!=</span><span class="p">,</span> <span class="o">&gt;</span><span class="p">,</span> <span class="o">&lt;</span><span class="p">,</span> <span class="o">&gt;=</span><span class="p">,</span> <span class="o">&lt;=</span><span class="p">,</span> <span class="o">&amp;&amp;</span><span class="p">,</span> <span class="o">||</span><span class="p">,</span> <span class="o">!</span><span class="p">,</span> <span class="o">-</span>
+</pre></div>
+</div>
+<p>注意上面最后一个 &#8220;-&#8221; 表示 &#8220;反号&#8221; ，应和 &#8220;减号&#8221; 区别开来。</p>
+<p>TinyC 不支持 ++ 和 - - 。赋值语句只能单独使用，不能放在表达式内部，如：</p>
+<div class="highlight-c"><div class="highlight"><pre><span class="n">x</span> <span class="o">=</span> <span class="n">y</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>      <span class="c1">// 不合法</span>
+<span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">;</span>    <span class="c1">// 也不合法</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id3">
+<h2>2.3 输入及输出<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
+<p>TinyC 提供两个基本的 io 命令， print 和 readint 。如：</p>
+<div class="highlight-c"><div class="highlight"><pre><span class="n">print</span><span class="p">(</span><span class="s">&quot;x = %d, y = %d&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">);</span>          <span class="c1">// 输出： x = 2, y = 3</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">readint</span><span class="p">(</span><span class="s">&quot;Please input an integer&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>print 命令将字符串打印至标准输出，并自动换行，仅支持 %d 格式化。 readint 命令先打印提示信息，再从标准输入中读取一个整数并返回。注意， readint 命令必须放在赋值语句的右边，单独的 readint 命令是不合法的，而 print 命令只能单独使用，不能放在赋值语句的右边：</p>
+<div class="highlight-c"><div class="highlight"><pre><span class="n">x</span> <span class="o">=</span> <span class="n">readint</span><span class="p">(</span><span class="s">&quot;Please input an integer&quot;</span><span class="p">);</span> <span class="c1">// 合法</span>
+<span class="n">readint</span><span class="p">(</span><span class="s">&quot;Please input an integer&quot;</span><span class="p">);</span>     <span class="c1">// 不合法</span>
+<span class="n">print</span><span class="p">(</span><span class="s">&quot;x = %d, y = %d&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">);</span>          <span class="c1">// 合法</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">print</span><span class="p">(</span><span class="s">&quot;x = %d, y = %d&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">);</span>      <span class="c1">// 不合法</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id4">
+<h2>2.4 控制及循环语句<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h2>
+<p>TinyC 仅支持 if/else 和 while 语句， while 循环中支持 continue 和 break 。不支持 for 、 switch 、 goto 等其他语句。if/else 和 while 的执行体必须用花括号括起来。如：</p>
+<div class="highlight-c"><div class="highlight"><pre><span class="k">if</span> <span class="p">(</span><span class="n">x</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="n">y</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>      <span class="c1">// 不合法</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">x</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span> <span class="n">y</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="p">}</span>  <span class="c1">// 合法</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id5">
+<h2>2.5 函数调用<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h2>
+<p>TinyC 支持函数调用，支持递归。</p>
+</div>
+<div class="section" id="id6">
+<h2>2.6 关键字<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h2>
+<p>TinyC 中的关键字只有下面这些：</p>
+<div class="highlight-text"><div class="highlight"><pre>void, int, while, if, else, return, break, continue, print, readint
+</pre></div>
+</div>
+</div>
+<div class="section" id="id7">
+<h2>2.7 典型 TinyC 程序<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h2>
+<p>好了，以上就是 TinyC 的全部了，够简单吧。典型的 TinyC 程序如下：</p>
+<div class="highlight-c"><div class="highlight"><pre><span class="cp">#include &quot;for_gcc_build.hh&quot; </span><span class="c1">// only for gcc, TinyC will ignore it.</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kt">int</span> <span class="n">i</span><span class="p">;</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="k">while</span> <span class="p">(</span><span class="n">i</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">==</span> <span class="mi">3</span> <span class="o">||</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">5</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">continue</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">==</span> <span class="mi">8</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">break</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="n">print</span><span class="p">(</span><span class="s">&quot;%d! = %d&quot;</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">factor</span><span class="p">(</span><span class="n">i</span><span class="p">));</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">factor</span><span class="p">(</span><span class="kt">int</span> <span class="n">n</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">n</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">n</span> <span class="o">*</span> <span class="n">factor</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>以上代码中的第一行的 #include &#8220;for_gcc_build.hh&#8221; 是为了利用gcc来编译该文件的，TinyC 编译器会注释掉该行。<a class="reference download internal" href="_downloads/for_gcc_build.hh"><tt class="xref download docutils literal"><span class="pre">for_gcc_build.hh</span></tt></a> 文件源码如下：</p>
+<div class="highlight-c"><div class="highlight"><pre><span class="cp">#include &lt;stdio.h&gt;</span>
+<span class="cp">#include &lt;string.h&gt;</span>
+<span class="cp">#include &lt;stdarg.h&gt;</span>
+
+<span class="kt">void</span> <span class="nf">print</span><span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="n">format</span><span class="p">,</span> <span class="p">...)</span> <span class="p">{</span>
+    <span class="kt">va_list</span> <span class="n">args</span><span class="p">;</span>
+    <span class="n">va_start</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">format</span><span class="p">);</span>
+    <span class="n">vprintf</span><span class="p">(</span><span class="n">format</span><span class="p">,</span> <span class="n">args</span><span class="p">);</span>
+    <span class="n">va_end</span><span class="p">(</span><span class="n">args</span><span class="p">);</span>
+    <span class="n">puts</span><span class="p">(</span><span class="s">&quot;&quot;</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">readint</span><span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="n">prompt</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">int</span> <span class="n">i</span><span class="p">;</span>
+    <span class="n">printf</span><span class="p">(</span><span class="n">prompt</span><span class="p">);</span>
+    <span class="n">scanf</span><span class="p">(</span><span class="s">&quot;%d&quot;</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">i</span><span class="p">);</span>
+    <span class="k">return</span> <span class="n">i</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="cp">#define auto</span>
+<span class="cp">#define short</span>
+<span class="cp">#define long</span>
+<span class="cp">#define float</span>
+<span class="cp">#define double</span>
+<span class="cp">#define char</span>
+<span class="cp">#define struct</span>
+<span class="cp">#define union</span>
+<span class="cp">#define enum</span>
+<span class="cp">#define typedef</span>
+<span class="cp">#define const</span>
+<span class="cp">#define unsigned</span>
+<span class="cp">#define signed</span>
+<span class="cp">#define extern</span>
+<span class="cp">#define register</span>
+<span class="cp">#define static</span>
+<span class="cp">#define volatile</span>
+<span class="cp">#define switch</span>
+<span class="cp">#define case</span>
+<span class="cp">#define for</span>
+<span class="cp">#define do</span>
+<span class="cp">#define goto</span>
+<span class="cp">#define default</span>
+<span class="cp">#define sizeof</span>
+</pre></div>
+</div>
+<p>此文件中提供了 print 和 readint 函数，另外，将所有 C 语言支持、但 TinyC 不支持的关键词全部 define 成空名称，这样来保证 gcc 和 TinyC 编译器的效果差不多。利用 gcc 编译的目的是为了测试和对比 TinyC 编译器的编译结果。</p>
+<p>让我们先用 gcc 编译并运行一下上面这个典型的 TinyC 源文件吧。将以上代码分别存为 <a class="reference download internal" href="_downloads/tinyc.c"><tt class="xref download docutils literal"><span class="pre">tinyc.c</span></tt></a> 和 <a class="reference download internal" href="_downloads/for_gcc_build.hh"><tt class="xref download docutils literal"><span class="pre">for_gcc_build.hh</span></tt></a>，放在同一目录下，打开终端并 cd 到该目录，输入：</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>gcc -o tinyc tinyc.c
+<span class="nv">$ </span>./tinyc
+</pre></div>
+</div>
+<p>将输出：</p>
+<div class="highlight-bash"><div class="highlight"><pre>1! <span class="o">=</span> 1
+2! <span class="o">=</span> 2
+4! <span class="o">=</span> 24
+6! <span class="o">=</span> 720
+7! <span class="o">=</span> 5040
+</pre></div>
+</div>
+<p>如果您的系统中没有 gcc ，则应先安装 gcc 。如果你使用的是 debian ，可以用 apt-get 命令来安装，如下：</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>sudo apt-get install build-essential
+</pre></div>
+</div>
+<p><strong>第 2 章完</strong></p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<h4><a href="index.html">首 页</a></h4>
+<h4>目 录</h4>
+  <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="ch1_overview.html">第01章 概 述</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">第02章 源程序 TinyC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch3_Pcode_syntax_a.html">第03章 中间代码 Pcode (上)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch4_Pcode_syntax_b.html">第04章 中间代码 Pcode (下)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch5_TinyC_to_Pcode_man.html">第05章 手工编译 TinyC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch6_compiler_overview.html">第06章 编译器基本流程</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch7_lexical_basic.html">第07章 词法分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch8_flex.html">第08章 用 flex 做词法分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch9_context_free_grammar.html">第09章 上下文无关语法及分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch10_top_down_parse.html">第10章 自顶向下分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch11_buttom_up_parse_a.html">第11章 自底向上分析 (上)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch12_buttom_up_parse_b.html">第12章 自底向上分析 (下)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch13_bison.html">第13章 用 bison 做语法分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch14_tinyc_frontend.html">第14章 TinyC 前端</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch15_tinyc_backend.html">第15章 TinyC 后端</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch16_tinyc_compiler.html">第16章 TinyC 编译器</a></li>
+</ul>
+
+  <h4>上一章</h4>
+  <p class="topless"><a href="ch1_overview.html"
+                        title="previous chapter">第01章 概 述</a></p>
+  <h4>下一章</h4>
+  <p class="topless"><a href="ch3_Pcode_syntax_a.html"
+                        title="next chapter">第03章 中间代码 Pcode (上)</a></p>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="ch3_Pcode_syntax_a.html" title="第03章 中间代码 Pcode (上)"
+             >next</a></li>
+        <li class="right" >
+          <a href="ch1_overview.html" title="第01章 概 述"
+             >previous</a> |</li>
+        <li><a href="index.html">自己动手写编译器</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2015, pandolia.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

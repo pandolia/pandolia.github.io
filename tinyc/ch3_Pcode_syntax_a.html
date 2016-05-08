@@ -1,0 +1,370 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>第03章 中间代码 Pcode (上) &mdash; 自己动手写编译器</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="自己动手写编译器" href="index.html" />
+    <link rel="next" title="第04章 中间代码 Pcode (下)" href="ch4_Pcode_syntax_b.html" />
+    <link rel="prev" title="第02章 源程序 TinyC" href="ch2_TinyC_syntax.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="ch4_Pcode_syntax_b.html" title="第04章 中间代码 Pcode (下)"
+             accesskey="N">next</a></li>
+        <li class="right" >
+          <a href="ch2_TinyC_syntax.html" title="第02章 源程序 TinyC"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">自己动手写编译器</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pcode">
+<h1>第03章 中间代码 Pcode (上)<a class="headerlink" href="#pcode" title="Permalink to this headline">¶</a></h1>
+<p>上一章中介绍了 TinyC 源程序的语法，本章及下一章介绍中间代码 Pcode 的语法，同时介绍 Pcode 虚拟机的内部结构、如何用 Pcode 模拟器运行 Pcode 、以及 Pcode 命令与 TinyC 程序之间的对应关系。</p>
+<div class="section" id="pcode-pcode-pcode">
+<h2>3.1 Pcode 、 Pcode 虚拟机及 Pcode 模拟器概述<a class="headerlink" href="#pcode-pcode-pcode" title="Permalink to this headline">¶</a></h2>
+<p>Pcode 是 TinyC 编译器的中间代码，是本人参考 pascal 编译器的中间代码 pcode 、并结合逆波兰表达式（后缀表达式）的逻辑后，设计出的一种非常简单的、基于栈和符号表的虚拟代码。</p>
+<p>Pcode 虚拟机是一个用来运行 Pcode 命令的、假想的机器，它包括：一个代码区（code）、一个指令指针（eip）、一个栈（stack）、一个变量表（var_table)、一个函数表（func_table）以及一个标签表（label_table）。</p>
+<p>Pcode 模拟器是本人用 Python 编写的一个解释和运行 Pcode 的程序，它实现了 Pcode 虚拟机的全部要素。</p>
+<p>Pcode 的所有命令都是对栈顶及附近的元素进行操作的，如 push/pop 命令分别将元素入栈和出栈，add 命令将栈顶的两个元素取出，相加后再放回栈顶。如：</p>
+<div class="highlight-c"><div class="highlight"><pre><span class="n">x</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="mi">3</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>可以翻译成以下Pcode：</p>
+<div class="highlight-text"><div class="highlight"><pre>push 1
+push 2
+push 3
+mul
+add
+pop x
+</pre></div>
+</div>
+<p>看起来是不是很眼熟，和所谓的逆波兰表达式（后缀表达式）有点相似吧？</p>
+<div class="highlight-text"><div class="highlight"><pre>1 2 3 * +
+</pre></div>
+</div>
+<p>Pcode 中以分号 &#8221;;&#8221; 开始的为注释，以标识符加冒号的为标签（如 &#8220;Label:&#8221; ）。</p>
+<p>Pcode 命令一共只有7组，都是非常简单的命令，其中也可以分为系统命令和自定义命令两种，自定义命令其实就是函数调用，是对系统命令的扩充。以下详细介绍 Pcode 的系统命令、各命令执行过程中 Pcode 虚拟机的状态变化、如何创建自定义命令（函数）、以及如何用 Pcode 模拟器运行 Pcode 。</p>
+</div>
+<div class="section" id="id1">
+<h2>3.2 变量声明命令<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<p><strong>var</strong> 命令，声明变量，向下增长栈的空间，将新增的空间分配（绑定）给刚声明的变量，并将变量名及分配给它的地址保存到变量表中。有以下用法：</p>
+<div class="highlight-text"><div class="highlight"><pre>var a           ; 栈顶向下增长 1 个单元，将新的栈顶单元分配（绑定）给 a
+var x, y, z     ; 栈顶向下增长 3 个单元，将新的栈顶单元分配（绑定）给 x, y, z
+</pre></div>
+</div>
+<p>&#8220;var a&#8221; 命令运行后栈及符号表的变化如下所示，其中左边为栈，右边为绑定的符号表，&#8221;&lt;-&#8221; 指向栈顶，该命令运行后，栈顶向下增长1个单元，并将变量a绑定到新的栈顶单元上。斜杠 &#8220;/&#8221; 来表示此单元尚未赋初始值，如果此单元在被赋初值之前被使用（读取），则虚拟机将出错终止。</p>
+<div class="highlight-text"><div class="highlight"><pre>------------+-----------                   ------------+-----------
+    stack   | bind var                         stack   | bind var
+------------+-----------                   ------------+-----------
+    ...     |                                  ...     |
+------------+-----------      var a        ------------+-----------
+    ...     |             -------------&gt;       ...     |
+------------+-----------                   ------------+-----------
+    ...     |&lt;-                                ...     |
+------------+-----------                   ------------+-----------
+                                                /      |&lt;-   a
+                                           ------------+-----------
+</pre></div>
+</div>
+<p>&#8220;var x, y, z&#8221; 命令运行后栈及符号表的变化所示，该命令运行后，栈顶向下增长 3 个单元，并将变量 x, y, z 绑定到新的栈顶单元上。</p>
+<div class="highlight-text"><div class="highlight"><pre>------------+-----------                   ------------+-----------
+    stack   | bind var                         stack   | bind var
+------------+-----------                   ------------+-----------
+    ...     |                                  ...     |
+------------+-----------   var x, y, z     ------------+-----------
+    ...     |             -------------&gt;       ...     |
+------------+-----------                   ------------+-----------
+    ...     |&lt;-                                ...     |
+------------+-----------                   ------------+-----------
+                                                /      |     x
+                                           ------------+-----------
+                                                /      |     y
+                                           ------------+-----------
+                                                /      |&lt;-   z
+                                           ------------+-----------
+</pre></div>
+</div>
+<p>var 命令运行后， Pcode 虚拟机会将刚刚声明的变量及分配给它的地址记录在变量表中，在后面的命令中可以根据变量名称来引用其内容。</p>
+<p>以上图示中，栈的增长方向都是向下，这是为了和大部分计算机系统架构和编译原理教材的惯例保持一致。</p>
+</div>
+<div class="section" id="id2">
+<h2>3.3 入栈及出栈命令<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<p><strong>push / pop</strong> 命令，将元素放入栈顶，或取出栈顶元素。有以下用法：</p>
+<div class="highlight-text"><div class="highlight"><pre>push 2   ; 将常数 2 入栈
+push a   ; 将变量 a 的值入栈， a 必须已被声明、且已被赋值过
+pop      ; 将栈顶向上减少一个单位
+pop a    ; 取出栈顶元素，并赋给变量 a ， a 必须已被声明
+</pre></div>
+</div>
+<p>&#8220;push 2&#8221; 命令运行后，常数 2 被放入栈顶，如下：</p>
+<div class="highlight-text"><div class="highlight"><pre>------------+-----------                   ------------+-----------
+    stack   | bind var                         stack   | bind var
+------------+-----------      push 2       ------------+-----------
+    ...     |             -------------&gt;       ...     |
+------------+-----------                   ------------+-----------
+    ...     |&lt;-                                ...     |
+------------+-----------                   ------------+-----------
+                                                2      |&lt;-
+                                           ------------+-----------
+</pre></div>
+</div>
+<p>&#8220;push a&#8221; 命令运行后，变量 a 的值 &lt;5&gt; 被放入栈顶，如下图。</p>
+<div class="highlight-text"><div class="highlight"><pre>------------+-----------                   ------------+-----------
+    stack   | bind var                         stack   | bind var
+------------+-----------                   ------------+-----------
+     5      |    a                              5      |    a
+------------+-----------      push a       ------------+-----------
+    ...     |             -------------&gt;       ...     |
+------------+-----------                   ------------+-----------
+    ...     |&lt;-                                ...     |
+------------+-----------                   ------------+-----------
+                                                5      |&lt;-
+                                           ------------+-----------
+</pre></div>
+</div>
+<p>当虚拟机执行 push 命令时，若后面是一个变量名，则虚拟机会在其变量表中查找此变量名，如果查到了，且该变量的值不是空值 &#8220;/&#8221; ，则将此变量名对应的值放入栈顶，但若此时该变量尚未被赋初值（为空值 &#8220;/&#8221; ），则虚拟机将出错而终止，如果没有查找到，则虚拟机也会出错终止。</p>
+<p>&#8220;pop&#8221; 命令运行后，栈顶向上减少一个单位，栈顶元素被丢弃，如下：</p>
+<div class="highlight-text"><div class="highlight"><pre>------------+-----------                   ------------+-----------
+    stack   | bind var                         stack   | bind var
+------------+-----------      pop          ------------+-----------
+    ...     |             -------------&gt;       ...     |
+------------+-----------                   ------------+-----------
+    ...     |                                  ...     |&lt;-
+------------+-----------                   ------------+-----------
+    ...     |&lt;-
+------------+-----------
+</pre></div>
+</div>
+<p>&#8220;pop a&#8221; 命令运行后，栈顶的元素被取出，并将其值赋给了变量 a ，相当于 a = stack.pop() ，此命令是唯一一个能给 <strong>直接</strong> 给变量赋值的命令。栈的变化如下：</p>
+<div class="highlight-text"><div class="highlight"><pre>------------+-----------                   ------------+-----------
+    stack   | bind var                         stack   | bind var
+------------+-----------                   ------------+-----------
+    ...     |    a                              5      |    a
+------------+-----------      pop a        ------------+-----------
+    ...     |             -------------&gt;       ...     |
+------------+-----------                   ------------+-----------
+    ...     |                                  ...     |&lt;-
+------------+-----------                   ------------+-----------
+     5      |&lt;-
+------------+-----------
+</pre></div>
+</div>
+<p>当虚拟机执行 pop 命令后，若后面是一个变量名，虚拟机会在其变量表中查找此变量名，若查到了，则虚拟机会将栈顶元素取出，赋给该变量名对应的栈单元，若没查到，虚拟机会出错终止。</p>
+<p>此处同样需要注意的是，若此时 <strong>栈顶单元</strong> 尚未被赋初值（为空值 &#8220;/&#8221; ），则虚拟机将出错而终止。总而言之，栈上未被赋初值的单元是不能被使用（读取）的，此约束对后面将要介绍的所有命令都有效，因此后面就不再重复申明此约束了。</p>
+</div>
+<div class="section" id="id3">
+<h2>3.4 数据运算命令<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
+<p><strong>add / sub / mul / div / mod / cmpeq / cmpne / cmpgt / cmplt / cmpge / cmple / and / or / not / neg</strong> 命令，包括算术、比较和逻辑运算命令。对应于 TinyC 中的以下运算符：</p>
+<div class="highlight-c"><div class="highlight"><pre><span class="o">+</span><span class="p">,</span> <span class="o">-</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="o">%</span><span class="p">,</span> <span class="o">==</span><span class="p">,</span> <span class="o">!=</span><span class="p">,</span> <span class="o">&gt;</span><span class="p">,</span> <span class="o">&lt;</span><span class="p">,</span> <span class="o">&gt;=</span><span class="p">,</span> <span class="o">&lt;=</span><span class="p">,</span> <span class="o">&amp;&amp;</span><span class="p">,</span> <span class="o">||</span><span class="p">,</span> <span class="o">!</span><span class="p">,</span> <span class="o">-</span>
+</pre></div>
+</div>
+<p>注意最后一个 “ - ” 是反号的意思，应和减号区别开来。</p>
+<p>以上命令中，除 not 和 neg 命令外，其余命令均为二元操作命令，先取出栈顶两个元素，进行运算后，再将结果放回栈顶， not 和 neg 命令则为一元操作命令，只对栈顶一个元素进行操作。所有二元操作中， <strong>原栈顶元素是第二个操作符</strong> 。</p>
+<p>“ add ” 命令运行后栈的变化如下：</p>
+<div class="highlight-text"><div class="highlight"><pre>------------+-----------                   ------------+-----------
+    stack   | bind var                         stack   | bind var
+------------+-----------      add          ------------+-----------
+    ...     |             -------------&gt;       ...     |
+------------+-----------                   ------------+-----------
+     5      |                                   17     |&lt;-
+------------+-----------                   ------------+-----------
+     12     |&lt;-
+------------+-----------
+</pre></div>
+</div>
+<p>“ sub ” 命令运行后栈的变化如下，注意， <strong>原栈顶元素是第二个操作符</strong> ，最后的结果是 <strong>5 - 12</strong> 。</p>
+<div class="highlight-text"><div class="highlight"><pre>------------+-----------                   ------------+-----------
+    stack   | bind var                         stack   | bind var
+------------+-----------      sub          ------------+-----------
+    ...     |             -------------&gt;       ...     |
+------------+-----------                   ------------+-----------
+     5      |                                   -7     |&lt;-
+------------+-----------                   ------------+-----------
+     12     |&lt;-
+------------+-----------
+</pre></div>
+</div>
+<p>“ cmpgt ” 命令运行后栈的变化如下，注意原栈顶元素是第二个操作符，最后的结果是 5 &gt; 12 ，因此是 0 （非真）。</p>
+<div class="highlight-text"><div class="highlight"><pre>------------+-----------                   ------------+-----------
+    stack   | bind var                         stack   | bind var
+------------+-----------      cmpgt        ------------+-----------
+    ...     |             -------------&gt;       ...     |
+------------+-----------                   ------------+-----------
+     5      |                                   0      |&lt;-
+------------+-----------                   ------------+-----------
+     12     |&lt;-
+------------+-----------
+</pre></div>
+</div>
+<p>“ neg ” 命令运行后栈的变化如下，栈顶位置不变，栈顶元素被反号。</p>
+<div class="highlight-text"><div class="highlight"><pre>------------+-----------                   ------------+-----------
+    stack   | bind var                         stack   | bind var
+------------+-----------      neg          ------------+-----------
+    ...     |             -------------&gt;       ...     |
+------------+-----------                   ------------+-----------
+    ...     |                                  ...     |
+------------+-----------                   ------------+-----------
+     12     |&lt;-                                -12     |&lt;-
+------------+-----------                   ------------+-----------
+</pre></div>
+</div>
+<p>数据运算命令和入栈、出栈命令组合，即可实现简单的表达式求值。如：</p>
+<div class="highlight-c"><div class="highlight"><pre><span class="n">a</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="mi">3</span><span class="p">;</span>
+<span class="n">b</span> <span class="o">=</span> <span class="mi">8</span> <span class="o">-</span> <span class="mi">5</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>可以翻译成以下 Pcode ：</p>
+<div class="highlight-text"><div class="highlight"><pre>push 1          ; a = 1 + 2 * 3;
+push 2
+push 3
+mul
+add
+pop a
+
+push 8          ; b = 8 - 5;
+push 5
+sub
+pop b
+</pre></div>
+</div>
+<p>注意表达式中的元素的入栈顺序为 <strong>从左向右入栈</strong> ，这样的顺序和人的阅读顺序是一致的。</p>
+</div>
+<div class="section" id="id4">
+<h2>3.5 输入及输出命令<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h2>
+<p><strong>print / readint</strong> 命令，用法如下：</p>
+<div class="highlight-text"><div class="highlight"><pre>print &quot;Hello world&quot;         ; 输出：Hello world
+
+push 1
+push 2                      ; 相当于 print(&quot;(%d, %d)&quot;, 1, 2);
+print &quot;(%d, %d)&quot;            ; 输出：(1, 2)
+
+readint &quot;Input: &quot;
+pop x                       ; 相当于 x = readint(&quot;Input: &quot;);
+</pre></div>
+</div>
+<p>print 命令会根据字符串的 “ %d ” 依次将栈顶元素取出，并打印出来，也就是说，上面第二个例子中 print 命令之前入栈的两个参数 1 和 2 ，在 print 后都将出栈。另外注意：参数的入栈的顺序需要从左向右入栈。</p>
+<div class="highlight-text"><div class="highlight"><pre>------------+-----------                   ------------+-----------
+    stack   | bind var                         stack   | bind var
+------------+----------- print &quot;(%d, %d)&quot;  ------------+-----------
+    ...     |            ---------------&gt;      ...     |&lt;-
+------------+-----------                   ------------+-----------
+     1      |                                          |
+------------+-----------                   ------------+-----------
+     2      |&lt;-                                        |
+------------+-----------                   ------------+-----------
+
+                                            terminal out&gt;&gt; (1, 2)
+</pre></div>
+</div>
+<p>readint 命令先打印提示信息，再从标准输入中读取一个整数，返回后将其放入栈顶。</p>
+<div class="highlight-text"><div class="highlight"><pre>------------+-----------                   ------------+-----------
+    stack   | bind var                         stack   | bind var
+------------+----------- readint &quot;Input: &quot; ------------+-----------
+    ...     |&lt;-          ---------------&gt;      ...     |
+------------+-----------                   ------------+-----------
+            |                                   2      |&lt;-
+------------+-----------                   ------------+-----------
+            |                                          |
+------------+-----------                   ------------+-----------
+
+                                            terminal out&gt;&gt; Input: 2
+</pre></div>
+</div>
+</div>
+<div class="section" id="id5">
+<h2>3.6 退出命令<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h2>
+<p><strong>exit</strong> 命令，退出虚拟机的运行，并设置退出码，有以下用法：</p>
+<div class="highlight-text"><div class="highlight"><pre>exit 0      ; 退出码为 0
+exit a      ; 退出码为 a 的值
+exit ~      ; 退出码为栈顶元素的值
+</pre></div>
+</div>
+<p>上面的代码中用 “ ~ ” 来代表栈顶，这将是 Pcode 中的一个约定。</p>
+<p><strong>第 3 章完</strong></p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<h4><a href="index.html">首 页</a></h4>
+<h4>目 录</h4>
+  <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="ch1_overview.html">第01章 概 述</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch2_TinyC_syntax.html">第02章 源程序 TinyC</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">第03章 中间代码 Pcode (上)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch4_Pcode_syntax_b.html">第04章 中间代码 Pcode (下)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch5_TinyC_to_Pcode_man.html">第05章 手工编译 TinyC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch6_compiler_overview.html">第06章 编译器基本流程</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch7_lexical_basic.html">第07章 词法分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch8_flex.html">第08章 用 flex 做词法分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch9_context_free_grammar.html">第09章 上下文无关语法及分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch10_top_down_parse.html">第10章 自顶向下分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch11_buttom_up_parse_a.html">第11章 自底向上分析 (上)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch12_buttom_up_parse_b.html">第12章 自底向上分析 (下)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch13_bison.html">第13章 用 bison 做语法分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch14_tinyc_frontend.html">第14章 TinyC 前端</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch15_tinyc_backend.html">第15章 TinyC 后端</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch16_tinyc_compiler.html">第16章 TinyC 编译器</a></li>
+</ul>
+
+  <h4>上一章</h4>
+  <p class="topless"><a href="ch2_TinyC_syntax.html"
+                        title="previous chapter">第02章 源程序 TinyC</a></p>
+  <h4>下一章</h4>
+  <p class="topless"><a href="ch4_Pcode_syntax_b.html"
+                        title="next chapter">第04章 中间代码 Pcode (下)</a></p>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="ch4_Pcode_syntax_b.html" title="第04章 中间代码 Pcode (下)"
+             >next</a></li>
+        <li class="right" >
+          <a href="ch2_TinyC_syntax.html" title="第02章 源程序 TinyC"
+             >previous</a> |</li>
+        <li><a href="index.html">自己动手写编译器</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2015, pandolia.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,796 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>第15章 TinyC 后端 &mdash; 自己动手写编译器</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="自己动手写编译器" href="index.html" />
+    <link rel="next" title="第16章 TinyC 编译器" href="ch16_tinyc_compiler.html" />
+    <link rel="prev" title="第14章 TinyC 前端" href="ch14_tinyc_frontend.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="ch16_tinyc_compiler.html" title="第16章 TinyC 编译器"
+             accesskey="N">next</a></li>
+        <li class="right" >
+          <a href="ch14_tinyc_frontend.html" title="第14章 TinyC 前端"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">自己动手写编译器</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="tinyc">
+<h1>第15章 TinyC 后端<a class="headerlink" href="#tinyc" title="Permalink to this headline">¶</a></h1>
+<p>至此我们的 TinyC 前端已经完成，可以将 TinyC 源程序编译成中间代码 Pcode ，且可以用 Pcode 模拟器来运行 TinyC 前端生成的 Pcode 。接下来编写 TinyC 后端，将中间代码编译、链接成可执行源程序。我们将针对所有 Pcode 命令编写同名的 NASM 宏将 Pcode 翻译成 x86（32位） 汇编指令，然后利用 Nasm 汇编成二进制目标程序，最后用链接器 ld 链接成 Linux 下的 32 位可执行程序。</p>
+<div class="section" id="nasm">
+<h2>15.1 NASM 简介<a class="headerlink" href="#nasm" title="Permalink to this headline">¶</a></h2>
+<p>NASM 全称 The Netwide Assembler ，是一款基于 x86 平台的汇编语言编译程序，其设计初衷是为了实现编译器程序跨平台和模块化的特性。 NASM 支持大量的文件格式，包括 Linux ， BSD ， a.out ， ELF ， COFF ， Mach−O ， Microsoft 16−bit OBJ ， Win32 以及 Win64 ，同时也支持简单的二进制文件生成。它的语法被设计的简单易懂，相较 Intel 的语法更为简单，支持目前已知的所有 x86 架构之上的扩展语法，同时也拥有对宏命令的良好支持。</p>
+<p>用 NASM 编写 Linux 下的 hello world 示例程序 <a class="reference download internal" href="_downloads/hello.nasm"><tt class="xref download docutils literal"><span class="pre">hello.nasm</span></tt></a> 如下：</p>
+<div class="highlight-nasm"><div class="highlight"><pre>GLOBAL _start
+
+[SECTION .TEXT]
+_start:
+    MOV EAX, 4          ; write
+    MOV EBX, 1          ; stdout
+    MOV ECX, msg
+    MOV EDX, len
+    INT 0x80            ; write(stdout, msg, len)
+
+    MOV EAX, 1          ; exit
+    MOV EBX, 0
+    INT 0x80            ; exit(0)
+
+[SECTION .DATA]
+    msg: DB  &quot;Hello, world!&quot;, 10
+    len: EQU $-msg
+</pre></div>
+</div>
+<p>编译和运行的命令如下（ Debian-8.4-amd64 环境下）：</p>
+<div class="highlight-text"><div class="highlight"><pre>$ nasm -f elf32 -o hello.o hello.nasm
+$ ld -m elf_i386 -o hello hello.o
+$ ./hello
+Hello, world!
+</pre></div>
+</div>
+<p>Linux 32位可执行程序中，用 &#8220;INT 0x80&#8221; 指令来执行一个系统调用，用 &#8220;EAX&#8221; 指定系统调用编号，用 &#8220;EBX, ECX, EDX&#8221; 来传递系统调用需要的参数。上面这段汇编代码中，首先执行了编号为 4 的系统调用（write），向 stdout 写了一个长为 len 的字符串（msg），之后，执行编号为 1 的系统调用（exit）。</p>
+<p>NASM 拥有对宏命令的良好支持，可以简化很多重复代码的编写。对于上面这个程序，可以编写两个名为 print 和 exit 的宏用来重复使用。新建一个 <a class="reference download internal" href="_downloads/macro.inc"><tt class="xref download docutils literal"><span class="pre">macro.inc</span></tt></a> 文件，内容如下：</p>
+<div class="highlight-nasm"><div class="highlight"><pre>%MACRO print 1
+    [SECTION .DATA]
+        %%STRING:   DB %1, 10
+        %%LEN:      EQU $-%%STRING
+    [SECTION .TEXT]
+        MOV EAX, 4          ; write
+        MOV EBX, 1          ; stdout
+        MOV ECX, %%STRING
+        MOV EDX, %%LEN
+        INT 0x80            ; write(stdout, %%STRING, %%LEN)
+%ENDMACRO
+
+%MACRO exit 1
+    MOV EAX, 1
+    MOV EBX, %1
+    INT 0x80
+%ENDMACRO
+
+GLOBAL _start
+
+[SECTION .TEXT]
+_start:
+</pre></div>
+</div>
+<p>新的 <a class="reference download internal" href="_downloads/hello1.nasm"><tt class="xref download docutils literal"><span class="pre">hello.nasm</span></tt></a> 如下：</p>
+<div class="highlight-nasm"><div class="highlight"><pre><span class="cp">%include &quot;macro.inc&quot;</span>
+
+<span class="nf">print</span> <span class="s">&quot;Hello world!&quot;</span>
+<span class="nf">print</span> <span class="s">&quot;Hello again!&quot;</span>
+<span class="nf">exit</span> <span class="mi">0</span>
+</pre></div>
+</div>
+<p>后面这段代码够简洁吧。</p>
+<p>上面这段代码中的 %include 命令和 C 语言中的 #inlucde 的作用是一样的，就是把 %include 后面的文件名对应的文件的内容原样的拷贝进来。</p>
+<p>下面再来解释一下 NASM 宏的使用。首先看简单一点的 exit 宏。 NASM 中： %MACRO 是宏定义的开始； %MACRO 后面接宏的名称；此处是 &#8220;exit&#8221; ；宏名后面是宏的参数数量，此处是 &#8220;1&#8221; ，表示该宏带有一个参数，宏内部中可以用 &#8220;%1, %2, %3, ...&#8221; 来引用宏的第 1 、 2 、 3 、 ... 个参数； %ENDMACRO 是宏定义的结束。</p>
+<p>宏定义好后，若后面的代码中遇到这个宏，则会用宏定义中的内容来替换这个宏。如 hello.nasm 中的 第 5 行 &#8220;exit 0&#8221;，会被替换成：</p>
+<div class="highlight-nasm"><div class="highlight"><pre><span class="nf">MOV</span> <span class="nb">EAX</span><span class="p">,</span> <span class="mi">1</span>
+<span class="nf">MOV</span> <span class="nb">EBX</span><span class="p">,</span> <span class="mi">0</span>
+<span class="nf">INT</span> <span class="mh">0x80</span>
+</pre></div>
+</div>
+<p>注意宏定义中的 <strong>%1</strong> 将被替换为 exit 后面的参数 <strong>0</strong>。</p>
+<p>print 宏定义稍微复杂一点，多了 %%STRING 和 %%LEN ，它们可以看成是宏定义中的局部名称，在每个 print 宏被展开的时候， NASM 会为这种类型的名称生成一个唯一的标志符。我们可以用 <strong>nasm -e hello.nasm</strong> 来查看 hello.nasm 文件经过预处理后的代码，如下（以下代码经过的适当的缩进和注释处理）：</p>
+<div class="highlight-nasm"><div class="highlight"><pre>[global _start]
+
+[SECTION .TEXT]
+_start:
+
+; print &quot;Hello world!&quot;
+[SECTION .DATA]
+    ..@1.STRING: DB &quot;Hello world!&quot;, 10
+    ..@1.LEN: EQU $-..@1.STRING
+[SECTION .TEXT]
+    MOV EAX, 4
+    MOV EBX, 1
+    MOV ECX, ..@1.STRING
+    MOV EDX, ..@1.LEN
+    INT 0x80
+
+; print &quot;Hello again&quot; 
+[SECTION .DATA]
+    ..@2.STRING: DB &quot;Hello again!&quot;, 10
+    ..@2.LEN: EQU $-..@2.STRING
+[SECTION .TEXT]
+    MOV EAX, 4
+    MOV EBX, 1
+    MOV ECX, ..@2.STRING
+    MOV EDX, ..@2.LEN
+    INT 0x80
+
+; exit 0
+MOV EAX, 1
+MOV EBX, 0
+INT 0x80
+</pre></div>
+</div>
+<p>可以看到，在 &#8216;print &#8220;Hello world!&#8221;&#8217; 宏中， %%STRING 被展开为 ..&#64;1.STRING ，而在 &#8216;print &#8220;Hello again!&#8221;&#8217; 宏中， %%STRING 被展开为 ..&#64;2.STRING 。</p>
+</div>
+<div class="section" id="nasm-pcode-x86-print">
+<h2>15.2 用 NASM 宏将 Pcode 命令翻译成 x86 指令 （ print 命令）<a class="headerlink" href="#nasm-pcode-x86-print" title="Permalink to this headline">¶</a></h2>
+<p>上面简单介绍了 NASM 以及它的强大的宏命令，可以实现复杂多样的宏展开。从本节开始，将编写一系列的宏定义，将中间代码 Pcode 命令展开为 x86 汇编指令。建议读者先回顾一下第 3、4 章的内容，再来看本章接下来的内容。</p>
+<p>在开始编写宏定义之前，首先说明一下两个约定： （1） 所有 Pcode 命令以及相应的宏名称都小写（ FUNC / ENDFUNC 命令除外），而所有 x86 汇编指令都大写； （2） 本书中的 x86 汇编指令，均用 NASM 语法书写。</p>
+<p>首先翻译 Pcode 命令中的 print 命令。上一节中定义的 print 宏已经和 Pcode 中的 print 命令在使用的格式上是一模一样的了，但是它还不能实现 <strong>%d</strong> 格式化输出。我们最终的 print 宏需要使下面这段代码（ <a class="reference download internal" href="_downloads/print.nasm"><tt class="xref download docutils literal"><span class="pre">print.nasm</span></tt></a> ）的输出为 &#8220;a = 1, b = 2, c = 3&#8221; ：</p>
+<div class="highlight-nasm"><div class="highlight"><pre><span class="nf">PUSH</span> <span class="kt">DWORD</span> <span class="mi">1</span>
+<span class="nf">PUSH</span> <span class="kt">DWORD</span> <span class="mi">2</span>
+<span class="nf">PUSH</span> <span class="kt">DWORD</span> <span class="mi">3</span>
+<span class="nf">print</span> <span class="s">&quot;a = %d, b = %d, c = %d&quot;</span>
+
+<span class="nf">exit</span> <span class="mi">0</span>
+</pre></div>
+</div>
+<p>直接看代码吧。宏文件 <a class="reference download internal" href="_downloads/macro1.inc"><tt class="xref download docutils literal"><span class="pre">macro.inc</span></tt></a> ：</p>
+<div class="highlight-nasm"><div class="highlight"><pre>%MACRO print 1
+    [SECTION .DATA]
+        %%STRING:   DB %1, 10, 0
+    [SECTION .TEXT]
+        PUSH DWORD %%STRING
+        CALL PRINT
+        SHL EAX, 2
+        ADD ESP, EAX
+%ENDMACRO
+
+%MACRO exit 1
+    MOV EAX, 1
+    MOV EBX, %1
+    INT 0x80
+%ENDMACRO
+
+EXTERN PRINT
+GLOBAL _start
+
+[SECTION .TEXT]
+_start:
+</pre></div>
+</div>
+<p>从宏文件可以看出， print 宏将会被展开为一个 PUSH 命令，一个函数调用命令（CALL PRINT），以及清栈的命令。具体的输出工作将由 PRINT 函数来处理，同时 PRINT 函数还需要返回字符串中含有的 <strong>%d</strong> 的个数，这样函数调用完毕后可以根据返回值（保存在 EAX 中）来进行清栈（这就是 &#8220;SHL EAX, 2&#8221; 和 &#8220;ADD ESP, EAX&#8221; 的作用）。</p>
+<p>PRINT 函数可以用 C 语言来编写，然后编译成库文件，最后和目标文件一起链接成可执行文件。PRINT 函数源代码如下（ <a class="reference download internal" href="_downloads/tio.c"><tt class="xref download docutils literal"><span class="pre">tio.c</span></tt></a> ）：</p>
+<div class="highlight-c"><div class="highlight"><pre><span class="kt">void</span> <span class="nf">SYS_PRINT</span><span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="n">string</span><span class="p">,</span> <span class="kt">int</span> <span class="n">len</span><span class="p">);</span>
+
+<span class="cp">#define BUFLEN 1024</span>
+
+<span class="kt">int</span> <span class="nf">PRINT</span><span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="n">fmt</span><span class="p">,</span> <span class="p">...)</span>
+<span class="p">{</span>
+    <span class="kt">int</span> <span class="o">*</span><span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="kt">int</span><span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">fmt</span><span class="p">;</span>
+    <span class="kt">char</span> <span class="n">buf</span><span class="p">[</span><span class="n">BUFLEN</span><span class="p">];</span>
+    <span class="kt">char</span> <span class="o">*</span><span class="n">p1</span> <span class="o">=</span> <span class="n">fmt</span><span class="p">,</span> <span class="o">*</span><span class="n">p2</span> <span class="o">=</span> <span class="n">buf</span> <span class="o">+</span> <span class="n">BUFLEN</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">len</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">argc</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+
+    <span class="k">while</span> <span class="p">(</span><span class="o">*</span><span class="n">p1</span><span class="o">++</span><span class="p">)</span> <span class="p">;</span>
+
+    <span class="k">do</span> <span class="p">{</span>
+        <span class="n">p1</span><span class="o">--</span><span class="p">;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="o">*</span><span class="n">p1</span> <span class="o">==</span> <span class="sc">&#39;%&#39;</span> <span class="o">&amp;&amp;</span> <span class="o">*</span><span class="p">(</span><span class="n">p1</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="sc">&#39;d&#39;</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">p2</span><span class="o">++</span><span class="p">;</span> <span class="n">len</span><span class="o">--</span><span class="p">;</span> <span class="n">argc</span><span class="o">++</span><span class="p">;</span>
+            <span class="kt">int</span> <span class="n">num</span> <span class="o">=</span> <span class="o">*</span><span class="p">(</span><span class="o">++</span><span class="n">args</span><span class="p">),</span> <span class="n">negative</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+            <span class="k">if</span> <span class="p">(</span><span class="n">num</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+                <span class="n">negative</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+                <span class="n">num</span> <span class="o">=</span> <span class="o">-</span><span class="n">num</span><span class="p">;</span>
+            <span class="p">}</span>
+
+            <span class="k">do</span> <span class="p">{</span>
+                <span class="o">*</span><span class="p">(</span><span class="o">--</span><span class="n">p2</span><span class="p">)</span> <span class="o">=</span> <span class="n">num</span> <span class="o">%</span> <span class="mi">10</span> <span class="o">+</span> <span class="sc">&#39;0&#39;</span><span class="p">;</span> <span class="n">len</span><span class="o">++</span><span class="p">;</span>
+                <span class="n">num</span> <span class="o">/=</span> <span class="mi">10</span><span class="p">;</span>
+            <span class="p">}</span> <span class="k">while</span> <span class="p">(</span><span class="n">num</span><span class="p">);</span>
+
+            <span class="k">if</span> <span class="p">(</span><span class="n">negative</span><span class="p">)</span> <span class="p">{</span>
+                <span class="o">*</span><span class="p">(</span><span class="o">--</span><span class="n">p2</span><span class="p">)</span> <span class="o">=</span> <span class="sc">&#39;-&#39;</span><span class="p">;</span> <span class="n">len</span><span class="o">++</span><span class="p">;</span>
+            <span class="p">}</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="o">*</span><span class="p">(</span><span class="o">--</span><span class="n">p2</span><span class="p">)</span> <span class="o">=</span> <span class="o">*</span><span class="n">p1</span><span class="p">;</span> <span class="n">len</span><span class="o">++</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span> <span class="k">while</span> <span class="p">(</span><span class="n">p1</span> <span class="o">!=</span> <span class="n">fmt</span><span class="p">);</span>
+
+    <span class="n">SYS_PRINT</span><span class="p">(</span><span class="n">p2</span><span class="p">,</span> <span class="n">len</span><span class="p">);</span>
+
+    <span class="k">return</span> <span class="n">argc</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">SYS_PRINT</span><span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="n">string</span><span class="p">,</span> <span class="kt">int</span> <span class="n">len</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">__asm__</span><span class="p">(</span>
+    <span class="s">&quot;.intel_syntax noprefix</span><span class="se">\n</span><span class="s">\</span>
+<span class="s">        PUSH EAX</span><span class="se">\n</span><span class="s">\</span>
+<span class="s">        PUSH EBX</span><span class="se">\n</span><span class="s">\</span>
+<span class="s">        PUSH ECX</span><span class="se">\n</span><span class="s">\</span>
+<span class="s">        PUSH EDX</span><span class="se">\n</span><span class="s">\</span>
+<span class="s">        </span><span class="se">\n</span><span class="s">\</span>
+<span class="s">        MOV EAX, 4</span><span class="se">\n</span><span class="s">\</span>
+<span class="s">        MOV EBX, 1</span><span class="se">\n</span><span class="s">\</span>
+<span class="s">        MOV ECX, [EBP+4*2]</span><span class="se">\n</span><span class="s">\</span>
+<span class="s">        MOV EDX, [EBP+4*3]</span><span class="se">\n</span><span class="s">\</span>
+<span class="s">        INT 0X80</span><span class="se">\n</span><span class="s">\</span>
+<span class="s">        </span><span class="se">\n</span><span class="s">\</span>
+<span class="s">        POP EDX</span><span class="se">\n</span><span class="s">\</span>
+<span class="s">        POP ECX</span><span class="se">\n</span><span class="s">\</span>
+<span class="s">        POP EBX</span><span class="se">\n</span><span class="s">\</span>
+<span class="s">        POP EAX</span><span class="se">\n</span><span class="s">\</span>
+<span class="s">    .att_syntax&quot;</span>
+    <span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>用以下命令将 tio.c 编译成库文件 libtio.a 。</p>
+<div class="highlight-bash"><div class="highlight"><pre>gcc -m32 -c -o tio.o tio.c
+ar -crv libtio.a tio.o
+</pre></div>
+</div>
+<p>再将 print.nasm 汇编成目标文件 print.o 。</p>
+<div class="highlight-bash"><div class="highlight"><pre>nasm -f elf32 -P<span class="s2">&quot;macro.inc&quot;</span> -o print.o print.nasm
+</pre></div>
+</div>
+<p>最后将 print.o 链接为可执行文件 print ，链接时指定 tio 库（库文件为 libtio.a ），命令如下：</p>
+<div class="highlight-bash"><div class="highlight"><pre>ld -m elf_i386 -o print print.o -L. -ltio
+</pre></div>
+</div>
+<p>运行 print 将输出 &#8220;a = 1, b = 2, c = 3&#8221; 。</p>
+<p>以上文件中， print.nasm 中的 CALL PRINT （由 print 宏展开得到）将调用定义在 tio.c 中的 PRINT 函数。在 Linux（32位） 的汇编编程中，如果一个文件需要调用由外部文件定义的函数，那么需要遵循以下约定：</p>
+<blockquote>
+<div><p>（1） 本文件中需有 <strong>EXTERN funcname</strong> ，表示需要引用外部函数（函数名为 funcname ）；</p>
+<p>（2） 函数的参数通过栈传递，且按从右向左的顺序入栈，函数的第一个参数要最后一个入栈；</p>
+<p>（3） 函数开头的汇编指令为 &#8220;PUSH EBP; MOV EBP, ESP&#8221; ， 函数结尾的汇编指令为 &#8220;MOV ESP, EBP; POP EBP; RET&#8221; ，因此，在函数体内，第一个参数保存在 EBP+8 处，第二个参数保存在 EBP+12 ，第三个参数保存在 EBP+16 ，以此类推， ... 。</p>
+<p>（4） 入栈的参数由调用者负责出栈。</p>
+</div></blockquote>
+<p>下面结合这四个约定来详细的说明一下 print 宏是如何模拟出 Pcode 中 print 命令的效果的：</p>
+<blockquote>
+<div><p>（1） 首先，在 macro.inc 中定义了 print 宏，因此 print.nasm 中的代码：</p>
+<blockquote>
+<div><div class="highlight-nasm"><div class="highlight"><pre><span class="nf">PUSH</span> <span class="kt">DWORD</span> <span class="mi">1</span>
+<span class="nf">PUSH</span> <span class="kt">DWORD</span> <span class="mi">2</span>
+<span class="nf">PUSH</span> <span class="kt">DWORD</span> <span class="mi">3</span>
+<span class="nf">print</span> <span class="s">&quot;a = %d, b = %d, c = %d&quot;</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>将会被展开为下面的形式：</p>
+<blockquote>
+<div><div class="highlight-nasm"><div class="highlight"><pre>[SECTION .TEXT]
+    PUSH DWORD 1
+    PUSH DWORD 2
+    PUSH DWORD 3
+    PUSH DWORD %%STRING
+    CALL PRINT
+    SHL EAX, 2
+    ADD ESP, EAX
+
+[SECTION .DATA]
+    %%STRING:   DB &quot;a = %d, b = %d, c = %d&quot;, 10, 0
+</pre></div>
+</div>
+</div></blockquote>
+<p>（2） 以上代码中的 &#8220;CALL PRINT&#8221; 将调用定义在 tio.c 中的 PRINT 函数，该函数原型为 int PRINT(char *fmt, ...) ，其中第一个参数 fmt 就是最后一个入栈的参数，也就是字符串 &#8220;a = %d, b = %d, c = %d\n\0&#8221; 的起始地址。</p>
+<p>（3） PRINT 函数中的第一行 int *args = (int*)&amp;fmt 得到 fmt 的地址（注意：不是 fmt 的值），因此， args+1 就是倒数第二个入栈的参数的地址， *(args+1) 就是该参数的值（此处为 3 ）， *(args+2) 就是倒数第三个入栈的参数的值（此处为 2 ）， ... 。</p>
+<p>（4） PRINT 函数首先找到字符串 fmt 的结尾，然后从结尾一直向前扫描该字符串，如果扫描到普通字符，则直接拷贝到 buf 数组中，如果扫描到一个 &#8220;%d&#8221; ，则执行 num = *(++args) 得到相应的参数的数值，然后将此数值转换为字符串并拷贝到 buf 数组中，按此原则一直扫描到字符串的开头，最后将 buf 数组中的内容打印到终端。</p>
+<p>（5） 打印完毕后，PRINT 函数返回 fmt 中含有的 &#8220;%d&#8221; 的个数（保存在 EAX 中），因此， &#8220;CALL PRINT&#8221; 后面的 &#8220;SHL EAX, 2&#8221; 和 &#8220;ADD ESP, EAX&#8221; 会将所有的入栈的参数都出栈。</p>
+</div></blockquote>
+</div>
+<div class="section" id="pcode-readint">
+<h2>15.3 翻译 Pcode 中的 readint 命令<a class="headerlink" href="#pcode-readint" title="Permalink to this headline">¶</a></h2>
+<p>readint 命令的翻译和 print 命令的翻译方法差不多，也需要利用 C 语言编写库函数。以下为相关的代码：</p>
+<p>测试代码 <a class="reference download internal" href="_downloads/test.nasm"><tt class="xref download docutils literal"><span class="pre">test.nasm</span></tt></a> ：</p>
+<div class="highlight-nasm"><div class="highlight"><pre><span class="nf">readint</span> <span class="s">&quot;Please input an number: &quot;</span>
+<span class="nf">print</span> <span class="s">&quot;Your input is: %d&quot;</span>
+<span class="nf">exit</span> <span class="mi">0</span>
+</pre></div>
+</div>
+<p>readint 宏，在 <a class="reference download internal" href="_downloads/macro2.inc"><tt class="xref download docutils literal"><span class="pre">macro.inc</span></tt></a> 文件中：</p>
+<div class="highlight-nasm"><div class="highlight"><pre>%MACRO readint 1
+    [SECTION .DATA]
+        %%STRING:   DB %1, 0
+    [SECTION .TEXT]
+        PUSH DWORD %%STRING
+        CALL READINT
+        MOV [ESP], EAX
+%ENDMACRO
+EXTERN PRINT, READINT
+</pre></div>
+</div>
+<p>READINT 库函数，在 <a class="reference download internal" href="_downloads/tio1.c"><tt class="xref download docutils literal"><span class="pre">tio.c</span></tt></a> 文件中：</p>
+<div class="highlight-c"><div class="highlight"><pre><span class="kt">int</span> <span class="nf">STRLEN</span><span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="n">s</span><span class="p">);</span>
+<span class="kt">int</span> <span class="nf">SYS_READ</span><span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="n">buf</span><span class="p">,</span> <span class="kt">int</span> <span class="n">len</span><span class="p">);</span>
+
+<span class="kt">int</span> <span class="nf">READINT</span><span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="n">prompt</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">char</span> <span class="n">buf</span><span class="p">[</span><span class="n">BUFLEN</span><span class="p">],</span> <span class="o">*</span><span class="n">p</span> <span class="o">=</span> <span class="n">buf</span><span class="p">,</span> <span class="o">*</span><span class="n">p_end</span><span class="p">;</span>
+    <span class="n">SYS_PRINT</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="n">STRLEN</span><span class="p">(</span><span class="n">prompt</span><span class="p">));</span>
+    <span class="kt">int</span> <span class="n">len</span> <span class="o">=</span> <span class="n">SYS_READ</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span> <span class="n">BUFLEN</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">value</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">negative</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+    <span class="n">p_end</span> <span class="o">=</span> <span class="n">buf</span> <span class="o">+</span> <span class="n">len</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+
+    <span class="k">while</span> <span class="p">(</span><span class="n">p</span> <span class="o">!=</span> <span class="n">p_end</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="o">*</span><span class="n">p</span> <span class="o">==</span> <span class="sc">&#39; &#39;</span> <span class="o">||</span> <span class="o">*</span><span class="n">p</span> <span class="o">==</span> <span class="sc">&#39;\t&#39;</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">p</span><span class="o">++</span><span class="p">;</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="k">break</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">p</span> <span class="o">!=</span> <span class="n">p_end</span> <span class="o">&amp;&amp;</span> <span class="o">*</span><span class="n">p</span> <span class="o">==</span> <span class="sc">&#39;-&#39;</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">negative</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="n">p</span><span class="o">++</span><span class="p">;</span>
+    <span class="p">}</span>
+    
+    <span class="k">while</span> <span class="p">(</span><span class="n">p</span> <span class="o">!=</span> <span class="n">p_end</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="o">*</span><span class="n">p</span> <span class="o">&lt;=</span> <span class="sc">&#39;9&#39;</span> <span class="o">&amp;&amp;</span> <span class="o">*</span><span class="n">p</span> <span class="o">&gt;=</span> <span class="sc">&#39;0&#39;</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">value</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">+</span> <span class="o">*</span><span class="n">p</span> <span class="o">-</span> <span class="sc">&#39;0&#39;</span><span class="p">;</span>
+            <span class="o">*</span><span class="n">p</span><span class="o">++</span><span class="p">;</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="k">break</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">negative</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="o">-</span><span class="n">value</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">value</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">STRLEN</span><span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="n">s</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="k">while</span><span class="p">(</span><span class="o">*</span><span class="n">s</span><span class="o">++</span><span class="p">)</span> <span class="n">i</span><span class="o">++</span><span class="p">;</span>
+    <span class="k">return</span> <span class="n">i</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">SYS_READ</span><span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="n">buf</span><span class="p">,</span> <span class="kt">int</span> <span class="n">len</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">__asm__</span><span class="p">(</span>
+    <span class="s">&quot;.intel_syntax noprefix</span><span class="se">\n</span><span class="s">\</span>
+<span class="s">        PUSH EBX</span><span class="se">\n</span><span class="s">\</span>
+<span class="s">        PUSH ECX</span><span class="se">\n</span><span class="s">\</span>
+<span class="s">        PUSH EDX</span><span class="se">\n</span><span class="s">\</span>
+<span class="s">        </span><span class="se">\n</span><span class="s">\</span>
+<span class="s">        MOV EAX, 3</span><span class="se">\n</span><span class="s">\</span>
+<span class="s">        MOV EBX, 2</span><span class="se">\n</span><span class="s">\</span>
+<span class="s">        MOV ECX, [EBP+4*2]</span><span class="se">\n</span><span class="s">\</span>
+<span class="s">        MOV EDX, [EBP+4*3]</span><span class="se">\n</span><span class="s">\</span>
+<span class="s">        INT 0X80</span><span class="se">\n</span><span class="s">\</span>
+<span class="s">        </span><span class="se">\n</span><span class="s">\</span>
+<span class="s">        POP EDX</span><span class="se">\n</span><span class="s">\</span>
+<span class="s">        POP ECX</span><span class="se">\n</span><span class="s">\</span>
+<span class="s">        POP EBX</span><span class="se">\n</span><span class="s">\</span>
+<span class="s">    .att_syntax&quot;</span>
+    <span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><a class="reference download internal" href="_downloads/makefile4"><tt class="xref download docutils literal"><span class="pre">makefile</span></tt></a> 文件：</p>
+<div class="highlight-makefile"><div class="highlight"><pre><span class="nf">test</span><span class="o">:</span> <span class="n">test</span>.<span class="n">o</span> <span class="n">libtio</span>.<span class="n">a</span>
+	ld -m elf_i386 -o <span class="nb">test </span>test.o -L. -ltio
+
+<span class="nf">run</span><span class="o">:</span> <span class="n">test</span>
+	./test
+
+<span class="nf">test.o</span><span class="o">:</span> <span class="n">test</span>.<span class="n">nasm</span> <span class="n">macro</span>.<span class="n">inc</span>
+	nasm -f elf32 -P<span class="s2">&quot;macro.inc&quot;</span> -o test.o test.nasm
+
+<span class="nf">libtio.a</span><span class="o">:</span> <span class="n">tio</span>.<span class="n">c</span>
+	gcc -m32 -c -o tio.o tio.c
+	ar -crv libtio.a tio.o
+
+<span class="nf">clean</span><span class="o">:</span>
+	rm test.o <span class="nb">test </span>tio.o libtio.a
+</pre></div>
+</div>
+<p>将以上四个文件下载下来放到用一个目录，输入 make run 即可编译并运行测试代码。运行过程如下：</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>make run
+...
+./test
+Please input an number: 15
+Your input is: 15
+</pre></div>
+</div>
+</div>
+<div class="section" id="pcode-push-pop-jmp-jz">
+<h2>15.4 翻译 Pcode 中的算术命令、 push/pop 命令以及 jmp/jz 命令<a class="headerlink" href="#pcode-push-pop-jmp-jz" title="Permalink to this headline">¶</a></h2>
+<p>算术命令（add / sub / mul / div / mod / cmpeq / cmpne / cmpgt / cmplt / cmpge / cmple / and / or / not / neg 命令）、 push/pop 命令以及 jmp/jz 命令的操作很简单，因此将其翻译成 x86 指令也很简单，结合第 3 、 4 章中介绍的这些命令对栈的操作步骤，典型的宏定义如下：</p>
+<div class="highlight-nasm"><div class="highlight"><pre><span class="cp">%MACRO add 0</span>
+    <span class="nf">POP</span> <span class="nb">EAX</span>
+    <span class="nf">ADD</span> <span class="kt">DWORD</span> <span class="p">[</span><span class="nb">ESP</span><span class="p">],</span> <span class="nb">EAX</span>
+<span class="cp">%ENDMACRO</span>
+
+<span class="cp">%MACRO sub 0</span>
+    <span class="nf">POP</span> <span class="nb">EAX</span>
+    <span class="nf">SUB</span> <span class="kt">DWORD</span> <span class="p">[</span><span class="nb">ESP</span><span class="p">],</span> <span class="nb">EAX</span>
+<span class="cp">%ENDMACRO</span>
+
+<span class="cp">%MACRO cmpeq 0</span>
+    <span class="nf">MOV</span> <span class="nb">EAX</span><span class="p">,</span> <span class="p">[</span><span class="nb">ESP</span><span class="o">+</span><span class="mi">4</span><span class="p">]</span>
+    <span class="nf">CMP</span> <span class="nb">EAX</span><span class="p">,</span> <span class="p">[</span><span class="nb">ESP</span><span class="p">]</span>
+    <span class="nf">PUSHF</span>
+    <span class="nf">POP</span> <span class="nb">EAX</span>
+    <span class="nf">SHR</span> <span class="nb">EAX</span><span class="p">,</span> <span class="mi">6</span>
+    <span class="nf">AND</span> <span class="nb">EAX</span><span class="p">,</span> <span class="mh">0X1</span>
+    <span class="nf">ADD</span> <span class="nb">ESP</span><span class="p">,</span> <span class="mi">4</span>
+    <span class="nf">MOV</span> <span class="p">[</span><span class="nb">ESP</span><span class="p">],</span> <span class="nb">EAX</span>
+<span class="cp">%ENDMACRO</span>
+
+<span class="cp">%MACRO not 0</span>
+    <span class="nf">MOV</span> <span class="nb">EAX</span><span class="p">,</span> <span class="p">[</span><span class="nb">ESP</span><span class="p">]</span>
+    <span class="nf">OR</span> <span class="nb">EAX</span><span class="p">,</span> <span class="nb">EAX</span>
+    <span class="nf">PUSHF</span>
+    <span class="nf">POP</span> <span class="nb">EAX</span>
+    <span class="nf">SHR</span> <span class="nb">EAX</span><span class="p">,</span> <span class="mi">6</span>
+    <span class="nf">AND</span> <span class="nb">EAX</span><span class="p">,</span> <span class="mh">0X1</span>
+    <span class="nf">MOV</span> <span class="p">[</span><span class="nb">ESP</span><span class="p">],</span> <span class="nb">EAX</span>
+<span class="cp">%ENDMACRO</span>
+
+<span class="cp">%MACRO jz 1</span>
+    <span class="nf">POP</span> <span class="nb">EAX</span>
+    <span class="nf">OR</span> <span class="nb">EAX</span><span class="p">,</span> <span class="nb">EAX</span>
+    <span class="nf">JZ</span> <span class="o">%</span><span class="mi">1</span>
+<span class="cp">%ENDMACRO</span>
+
+<span class="cp">%MACRO jmp 1</span>
+    <span class="nf">JMP</span> <span class="o">%</span><span class="mi">1</span>
+<span class="cp">%ENDMACRO</span>
+
+<span class="cp">%MACRO push 1</span>
+    <span class="nf">PUSH</span> <span class="kt">DWORD</span> <span class="o">%</span><span class="mi">1</span>
+<span class="cp">%ENDMACRO</span>
+
+<span class="cp">%MACRO pop 0-1</span>
+<span class="cp">    %IFIDN %0, 0</span>
+        <span class="nf">ADD</span> <span class="nb">ESP</span><span class="p">,</span> <span class="mi">4</span>
+<span class="cp">    %ELSE</span>
+        <span class="nf">POP</span> <span class="kt">DWORD</span> <span class="o">%</span><span class="mi">1</span>
+<span class="cp">    %ENDIF</span>
+<span class="cp">%ENDMACRO</span>
+</pre></div>
+</div>
+<p>所有宏定义见 <a class="reference download internal" href="_downloads/macro3.inc"><tt class="xref download docutils literal"><span class="pre">macro.inc</span></tt></a> 。</p>
+<p>测试文件   <a class="reference download internal" href="_downloads/test1.nasm"><tt class="xref download docutils literal"><span class="pre">test.nasm</span></tt></a> ：</p>
+<div class="highlight-nasm"><div class="highlight"><pre><span class="nf">MOV</span> <span class="nb">EBP</span><span class="p">,</span> <span class="nb">ESP</span>
+<span class="nf">SUB</span> <span class="nb">ESP</span><span class="p">,</span> <span class="mi">8</span>
+<span class="cp">%define a [EBP-4]</span>
+<span class="cp">%define b [EBP-8]</span>
+
+<span class="c1">; a = readint(&quot;Please input an number `a`: &quot;)</span>
+<span class="nf">readint</span> <span class="s">&quot;Please input an number `a`: &quot;</span>
+<span class="nf">pop</span> <span class="nv">a</span>       <span class="c1">; ==&gt; POP DWORD [EBP-4]</span>
+
+<span class="c1">; b = readint(&quot;Please input another number `b`: &quot;)</span>
+<span class="nf">readint</span> <span class="s">&quot;Please input another number `b`: &quot;</span>
+<span class="nf">pop</span> <span class="nv">b</span>       <span class="c1">; ==&gt; POP DWORD [EBP-8]</span>
+
+<span class="c1">; print(&quot;a = %d&quot;, a)</span>
+<span class="nf">push</span> <span class="nv">a</span>      <span class="c1">; ==&gt; PUSH DWORD [EBP-4]</span>
+<span class="nf">print</span> <span class="s">&quot;a = %d&quot;</span>
+
+<span class="c1">; print(&quot;b = %d&quot;, b)</span>
+<span class="nf">push</span> <span class="nv">b</span>      <span class="c1">; ==&gt; PUSH DWORD [EBP-8]</span>
+<span class="nf">print</span> <span class="s">&quot;b = %d&quot;</span>
+
+<span class="c1">; print(&quot;a - b = %d&quot;, a - b)</span>
+<span class="nf">push</span> <span class="nv">a</span>
+<span class="nf">push</span> <span class="nv">b</span>
+<span class="nf">sub</span>
+<span class="nf">print</span> <span class="s">&quot;a - b = %d&quot;</span>
+
+<span class="c1">; if (a &gt; b) { print(&quot;a &gt; b&quot;); } else { print(&quot;a &lt;= b&quot;) }</span>
+<span class="nf">push</span> <span class="nv">a</span>
+<span class="nf">push</span> <span class="nv">b</span>
+<span class="nf">cmpgt</span>
+<span class="nf">jz</span> <span class="nv">_LESSEQUAL</span>
+<span class="nf">print</span> <span class="s">&quot;a &gt; b&quot;</span>
+<span class="nf">jmp</span> <span class="nv">_EXIT</span>
+<span class="nl">_LESSEQUAL:</span>
+    <span class="nf">print</span> <span class="s">&quot;a &lt;= b&quot;</span>
+<span class="nl">_EXIT:</span>
+    <span class="nf">exit</span> <span class="mi">0</span>
+</pre></div>
+</div>
+<p>库函数文件（ <a class="reference download internal" href="_downloads/tio1.c"><tt class="xref download docutils literal"><span class="pre">tio.c</span></tt></a> ）和 <a class="reference download internal" href="_downloads/makefile4"><tt class="xref download docutils literal"><span class="pre">makefile</span></tt></a> 文件，和上一节是一样的。</p>
+<p>将以上四个文件下载下来放到用一个目录，输入 make run 即可编译并运行测试代码。运行过程如下：</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>make run
+...
+./test
+Please input an number <span class="sb">`</span>a<span class="sb">`</span>: 46
+Please input another number <span class="sb">`</span>b<span class="sb">`</span>: 48
+<span class="nv">a</span> <span class="o">=</span> 46
+<span class="nv">b</span> <span class="o">=</span> 48
+a - <span class="nv">b</span> <span class="o">=</span> -2
+a &lt;<span class="o">=</span> b
+</pre></div>
+</div>
+<p>test.nasm 的开头在栈上分配了 8 个字节的空间（也就是 2 个 int ），并定义了 a 和 b 代表这储存在这两个 int 型空间中的数值：</p>
+<div class="highlight-nasm"><div class="highlight"><pre><span class="nf">MOV</span> <span class="nb">EBP</span><span class="p">,</span> <span class="nb">ESP</span>
+<span class="nf">SUB</span> <span class="nb">ESP</span><span class="p">,</span> <span class="mi">8</span>
+<span class="cp">%define a [EBP-4]</span>
+<span class="cp">%define b [EBP-8]</span>
+</pre></div>
+</div>
+<p>在 macro.inc 中定义了 pop 和 push 宏， test.nasm 中的 &#8220;pop a&#8221; 和 &#8220;push a&#8221; 将会被展开为： &#8220;POP DWORD [EBP-4]&#8221; 和 &#8220;PUSH DWORD [EBP-8]&#8221;。</p>
+</div>
+<div class="section" id="pcode">
+<h2>15.5 翻译 Pcode 中的自定义函数命令和变量声明命令<a class="headerlink" href="#pcode" title="Permalink to this headline">¶</a></h2>
+<p>上一节我们已经实现了将简单 TinyC 语句手工翻译成 Pcode ，然后编写了 NASM 宏将这些 Pcode 翻译成 x86 指令，最后汇编、链接成可执行程序。我们已经编写了大部分 Pcode 命令所对应的宏，本节将编写 NASM 宏来翻译 Pcode 中最复杂、也是最难翻译的命令&#8211;自定义函数命令和变量声明命令（FUNC / ENDFUNC / arg / ret / $func_name / var）。</p>
+<p>具体来说，我们需要将以下 Pcode 翻译成 x86 指令：</p>
+<div class="highlight-nasm"><div class="highlight"><pre>; int main() { 
+FUNC @main:
+    ; int a;
+    var a
+
+    ; a = 3;
+    push 3
+    pop a
+
+    ; print(&quot;sum = %d&quot;, sum(4, a));
+    push 4
+    push a
+    $sum
+    print &quot;sum = %d&quot;
+
+    ; return 0;
+    ret 0
+; }
+ENDFUNC
+
+; int sum(int a, int b) {
+FUNC @sum:
+    arg a, b
+
+    ; int c;
+    var c
+
+    ; c = a + b;
+    push a
+    push b
+    add
+    pop c
+
+    ; return c;
+    ret c
+; }
+ENDFUNC
+</pre></div>
+</div>
+<p>最难的部分在于如何避免不同函数中的同名变量的冲突。 NASM 的宏虽然强大，但无法满足如此复杂的需要。为降低翻译的难度，将以上 Pcode 稍微改写一下，保存为 <a class="reference download internal" href="_downloads/test.pcode"><tt class="xref download docutils literal"><span class="pre">test.pcode</span></tt></a> ：</p>
+<div class="highlight-nasm"><div class="highlight"><pre>; int main() { 
+FUNC @main:
+    ; int a;
+<span class="hll">    main.var a
+</span>
+    ; a = 3;
+    push 3
+    pop a
+
+    ; print(&quot;sum = %d&quot;, sum(4, a));
+    push 4
+    push a
+    $sum
+    print &quot;sum = %d&quot;
+
+    ; return 0;
+    ret 0
+; }
+<span class="hll">ENDFUNC@main
+</span>
+; int sum(int a, int b) {
+FUNC @sum:
+<span class="hll">    sum.arg a, b
+</span>
+    ; int c;
+<span class="hll">    sum.var c
+</span>
+    ; c = a + b;
+    push a
+    push b
+    add
+    pop c
+
+    ; return c;
+    ret c
+; }
+<span class="hll">ENDFUNC@sum
+</span></pre></div>
+</div>
+<p>首先编写 FUNC 和 ret 宏，放到 <a class="reference download internal" href="_downloads/macro4.inc"><tt class="xref download docutils literal"><span class="pre">macro.inc</span></tt></a> 文件中，同时在该文件的最后增加调用 &#64;main 函数及退出的指令：</p>
+<div class="highlight-nasm"><div class="highlight"><pre>%MACRO FUNC 1
+    %1
+    PUSH EBP
+    MOV EBP, ESP
+%ENDMACRO
+
+%MACRO ret 0-1
+    %IFIDN %0, 1
+        %IFIDN %1, ~
+            MOV EAX, [ESP]
+        %ELSE
+            MOV EAX, %1
+        %ENDIF
+    %ENDIF
+    LEAVE
+    RET
+%ENDMACRO
+
+EXTERN PRINT, READINT
+GLOBAL _start
+
+[SECTION .TEXT]
+_start:
+    CALL @main
+    PUSH EAX
+    exit [ESP]
+</pre></div>
+</div>
+<p>然后，编写 main.var, ENDFUNC&#64;main, $sum, sum.arg, sum.var 和 ENDFUNC&#64;sum 宏，保存为 <a class="reference download internal" href="_downloads/test.funcmacro"><tt class="xref download docutils literal"><span class="pre">test.funcmacro</span></tt></a> ：</p>
+<div class="highlight-nasm"><div class="highlight"><pre>; ==== begin function `main` ====
+%define main.varc 1
+
+%MACRO main.var main.varc
+    %define a [EBP - 4*1]
+    SUB ESP, 4*main.varc
+%ENDMACRO
+
+%MACRO ENDFUNC@main 0
+    LEAVE
+    RET
+    %undef a
+%ENDMACRO
+; ==== end function `main`   ====
+
+; ==== begin function `sum` ====
+%define sum.argc 2
+%define sum.varc 1
+
+%MACRO $sum 0
+    CALL @sum
+    ADD ESP, 4*sum.argc
+    PUSH EAX
+%ENDMACRO
+
+%MACRO sum.arg sum.argc
+    %define a [EBP + 8 + 4*sum.argc - 4*1]
+    %define b [EBP + 8 + 4*sum.argc - 4*2]
+%ENDMACRO
+
+%MACRO sum.var sum.varc
+    %define c [EBP - 4*1]
+    SUB ESP, 4*sum.varc
+%ENDMACRO
+
+%MACRO ENDFUNC@sum 0
+    LEAVE
+    RET
+    %undef a
+    %undef b
+    %undef c
+%ENDMACRO
+; ==== end function `sum`  ====
+</pre></div>
+</div>
+<p>这些宏会将 &#64;sum 函数展开为如下形式：</p>
+<div class="highlight-nasm"><div class="highlight"><pre>@sum:
+    PUSH EBP
+    MOV EBP, ESP
+    SUB ESP, 4*1
+
+    PUSH DWORD [EBP + 12]   ; push a
+    PUSH DWORD  [EBP + 8]   ; push b
+    add
+    POP DWORD [EBP - 4*1]   ; pop c
+
+    MOV EAX, [EBP - 4*1]    ; MOV EAX, c
+    LEAVE
+    RET
+</pre></div>
+</div>
+<p>最后，改写 <a class="reference download internal" href="_downloads/makefile5"><tt class="xref download docutils literal"><span class="pre">makefile</span></tt></a> 文件中的以下两行：</p>
+<div class="highlight-makefile"><div class="highlight"><pre><span class="nf">test.o</span><span class="o">:</span> <span class="n">test</span>.<span class="n">pcode</span> <span class="n">test</span>.<span class="n">funcmacro</span> <span class="n">macro</span>.<span class="n">inc</span>
+	nasm -f elf32 -P<span class="s2">&quot;macro.inc&quot;</span> -P<span class="s2">&quot;test.funcmacro&quot;</span> -o test.o test.pcode
+</pre></div>
+</div>
+<p>将以上四个文件以及库函数文件 <a class="reference download internal" href="_downloads/tio2.c"><tt class="xref download docutils literal"><span class="pre">tio.c</span></tt></a> 放到用一个目录，输入 make run 即可编译并运行测试代码。</p>
+<p>至此所有 Pcode 命令对应的 NASM 宏编写完毕。</p>
+<p><strong>第 15 章完</strong></p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<h4><a href="index.html">首 页</a></h4>
+<h4>目 录</h4>
+  <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="ch1_overview.html">第01章 概 述</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch2_TinyC_syntax.html">第02章 源程序 TinyC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch3_Pcode_syntax_a.html">第03章 中间代码 Pcode (上)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch4_Pcode_syntax_b.html">第04章 中间代码 Pcode (下)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch5_TinyC_to_Pcode_man.html">第05章 手工编译 TinyC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch6_compiler_overview.html">第06章 编译器基本流程</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch7_lexical_basic.html">第07章 词法分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch8_flex.html">第08章 用 flex 做词法分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch9_context_free_grammar.html">第09章 上下文无关语法及分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch10_top_down_parse.html">第10章 自顶向下分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch11_buttom_up_parse_a.html">第11章 自底向上分析 (上)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch12_buttom_up_parse_b.html">第12章 自底向上分析 (下)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch13_bison.html">第13章 用 bison 做语法分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch14_tinyc_frontend.html">第14章 TinyC 前端</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">第15章 TinyC 后端</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch16_tinyc_compiler.html">第16章 TinyC 编译器</a></li>
+</ul>
+
+  <h4>上一章</h4>
+  <p class="topless"><a href="ch14_tinyc_frontend.html"
+                        title="previous chapter">第14章 TinyC 前端</a></p>
+  <h4>下一章</h4>
+  <p class="topless"><a href="ch16_tinyc_compiler.html"
+                        title="next chapter">第16章 TinyC 编译器</a></p>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="ch16_tinyc_compiler.html" title="第16章 TinyC 编译器"
+             >next</a></li>
+        <li class="right" >
+          <a href="ch14_tinyc_frontend.html" title="第14章 TinyC 前端"
+             >previous</a> |</li>
+        <li><a href="index.html">自己动手写编译器</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2015, pandolia.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

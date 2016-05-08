@@ -1,0 +1,134 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>第01章 概 述 &mdash; 自己动手写编译器</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="自己动手写编译器" href="index.html" />
+    <link rel="next" title="第02章 源程序 TinyC" href="ch2_TinyC_syntax.html" />
+    <link rel="prev" title="自己动手写编译器" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="ch2_TinyC_syntax.html" title="第02章 源程序 TinyC"
+             accesskey="N">next</a></li>
+        <li class="right" >
+          <a href="index.html" title="自己动手写编译器"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">自己动手写编译器</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="id1">
+<h1>第01章 概 述<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h1>
+<p>编译器是将一种程序（源程序）翻译成另一种程序（目标程序）的计算机程序。本书介绍一个非常简单的编译器（ TinyC 编译器）的实现。</p>
+<p>TinyC 编译器可将 TinyC 源程序编译成 Linux 下的可执行程序，其编译及运行基本流程如下图，首先利用 TinyC 前端将 TinyC 源程序编译成中间代码 Pcode ，再利用 Nasm 的宏程序将 Pcode 翻译成 x86（32位） 汇编指令，然后利用 Nasm 汇编成二进制目标程序，最后链接成 Linux 下的 32 位可执行程序，可直接在 Linux 下运行。另外，中间代码 Pcode 也可以用 Pcode 模拟器直接运行。</p>
+<a class="reference internal image-reference" href="_images/TinyC_overview.png"><img alt="_images/TinyC_overview.png" src="_images/TinyC_overview.png" style="width: 402px; height: 508px;" /></a>
+<p><strong>图1.1 TinyC 编译及运行基本流程</strong></p>
+<p>上图中绿色部分的 TinyC 前端、 Nasm 宏以及 Pcode 模拟器为由本人编程实现的部分，其他则是利用了 Nasm 和 ld 来生成可执行的二进制机器码。本书将 Nasm 宏、 Nasm 汇编器、 ld 链接器一起称为 TinyC 后端，将 TinyC 前端和 TinyC 后端一起称为 TinyC 编译器。</p>
+<p>本书的组织结构如下：</p>
+<blockquote>
+<div><p>第 01 章概述 TinyC 编译器的基本流程以及本书的组织结构；</p>
+<p>第 02 章介绍源程序 TinyC 的语法；</p>
+<p>第 03 ～ 04 章介绍中间代码 Pcode 的语法、 Pcode 虚拟机的结构以及如何使用 Pcode 模拟器来运行 Pcode ；</p>
+<p>第 05 章介绍手工将 TinyC 源程序翻译成中间代码 Pcode 的方法；</p>
+<p>第 06 章系统介绍编译器的基本流程；</p>
+<p>第 07 ～ 08 章介绍词法分析的基本方法，以及如何使用 flex 进行词法分析；</p>
+<p>第 09 章介绍上下文无关语法以及语法分析的基本思路；</p>
+<p>第 10 ～ 13 章介绍两种典型的语法分析方法——自顶向下分析法和自底向上分析法，详细描述这两种分析方法的构造流程及解析流程，并介绍如何使用 bison 进行语法分析；</p>
+<p>第 14 章介绍 TinyC 前端的实现，从一个简陋的语法分析器开始，一步一步的扩充为完整的 TinyC 前端；</p>
+<p>第 15 章介绍 TinyC 后端的实现，针对所有 Pcode 命令编写相应的同名 Nasm 宏，将 Pcode 中间代码翻译成 x86 汇编，然后汇编、链接成 Linux 操作系统下的可执行程序。</p>
+<p>第 16 章将 TinyC 前端和后端整合，形成完整的 TinyC 编译器。</p>
+</div></blockquote>
+<p>本书的主要目的是用简单的实例来说明编译原理中的一般过程及原理，让读者在自己动手的实践过程中对编译原理有更深的理解，读者需要具备以下基础知识：</p>
+<blockquote>
+<div><p>（1） 熟悉计算机系统架构，熟悉 x86 汇编；</p>
+<p>（2） 熟练使用 C 语言，熟悉常见的算法，熟悉指针、内存布局等概念；</p>
+<p>（3） 会简单的 Linux 终端操作命令，会简单的 makefile 语法。</p>
+</div></blockquote>
+<p>TinyC 编译器在 Linux/debian 系统下开发完成，建议读者也使用 debian 或其他桌面版 Linux ，若在 windows 环境下，可以使用 VirtualBox 装一个虚拟 Linux 系统。本书所有源程序均放在 <a class="reference external" href="https://github.com/pandolia/tinyc">https://github.com/pandolia/tinyc</a> 。</p>
+<p><strong>第 1 章完</strong></p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<h4><a href="index.html">首 页</a></h4>
+<h4>目 录</h4>
+  <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="">第01章 概 述</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch2_TinyC_syntax.html">第02章 源程序 TinyC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch3_Pcode_syntax_a.html">第03章 中间代码 Pcode (上)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch4_Pcode_syntax_b.html">第04章 中间代码 Pcode (下)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch5_TinyC_to_Pcode_man.html">第05章 手工编译 TinyC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch6_compiler_overview.html">第06章 编译器基本流程</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch7_lexical_basic.html">第07章 词法分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch8_flex.html">第08章 用 flex 做词法分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch9_context_free_grammar.html">第09章 上下文无关语法及分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch10_top_down_parse.html">第10章 自顶向下分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch11_buttom_up_parse_a.html">第11章 自底向上分析 (上)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch12_buttom_up_parse_b.html">第12章 自底向上分析 (下)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch13_bison.html">第13章 用 bison 做语法分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch14_tinyc_frontend.html">第14章 TinyC 前端</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch15_tinyc_backend.html">第15章 TinyC 后端</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch16_tinyc_compiler.html">第16章 TinyC 编译器</a></li>
+</ul>
+
+  <h4>上一章</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">自己动手写编译器</a></p>
+  <h4>下一章</h4>
+  <p class="topless"><a href="ch2_TinyC_syntax.html"
+                        title="next chapter">第02章 源程序 TinyC</a></p>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="ch2_TinyC_syntax.html" title="第02章 源程序 TinyC"
+             >next</a></li>
+        <li class="right" >
+          <a href="index.html" title="自己动手写编译器"
+             >previous</a> |</li>
+        <li><a href="index.html">自己动手写编译器</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2015, pandolia.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>
