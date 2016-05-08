@@ -20,7 +20,7 @@ navigation:
 - text: 书签
   url: /bookmark.html
 - text: TinyC
-  url: http://pandolia.net/tinyc
+  url: /tinyc
 - text: 简书
   url: http://www.jianshu.com/users/46fd9a28f80c/latest_articles
 - text: 本站源码
