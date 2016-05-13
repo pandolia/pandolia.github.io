@@ -125,7 +125,11 @@ category: 笔记
 
 设置时区：`dpkg-reconfigure tzdata`，设置时间：`date -s 20160212; date -s 21:24:06`。
 
-### 3. Linux 使用中的一些小问题
+### 3. Linux 使用问题
 
 **chmod命令没效果**
 这是因为文件在windows的ntfs分区上，不支持Ｌinux下的用户permission等特性，需要将文件拷贝至ext分区上。
+
+**右键菜单没有 open in terminal 选项**
+
+    sudo apt-get install caja-open-terminal
