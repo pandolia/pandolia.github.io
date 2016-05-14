@@ -1,0 +1,34 @@
+<HTML>
+<HEAD>
+<TITLE> Slide Puzzle (by: miss_mary_110@163.com)</TITLE>
+<META NAME='Keywords' CONTENT='slide picture puzzle'>
+<STYLE>
+    TD {font-family: 'Times New Roman', Times,  serif;
+	    font-size:'75px'; color:'red'; text-align:'center';
+		width:'100px'; height:'100px'; cursor:'arrow'}
+    TD.tool  {font-size:'17px'; color:'black'; width:'10px'; height:'20px'}
+</STYLE>  
+</HEAD>
+<SCRIPT type='text/javascript' src='puzzle.js'></SCRIPT>
+<BODY onload='init(1, 4, 3)'>
+<TABLE align='center' id='tbBoard'></TABLE>
+<TABLE align='center' cellSpacing='10'>
+<TR>
+	<TD class='tool' id='info'></TD>
+	<TD class='tool'></TD>
+	<TD class='tool' id='chgPic' 
+	    onmouseover="this.style.background='gray'"
+	    onmouseout="this.style.background='white'"
+	    onmousedown="chgPic()">Change&nbsp;Picture</TD>
+	<TD class='tool'
+	    onmouseover="this.style.background='gray'"
+	    onmouseout="this.style.background='white'"
+	    onmousedown="shuffle()">Restart</TD>
+	<TD class='tool' id='chgType'
+	    onmouseover="this.style.background='gray'"
+	    onmouseout="this.style.background='white'"
+	    onmousedown="chgType()">Change&nbsp;Type</TD>
+<TR>
+</TABLE>
+</BODY>
+</HTML>

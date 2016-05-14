@@ -112,7 +112,7 @@ category: 笔记
     $ apt-get install libappindicator1 libappindicator3-1
     $ dpkg -i google-chrome-stable_current_amd64.deb
 
-其中 **google-chrome-stable_current_amd64.deb** 需要到[ lantern 官网](https://github.com/getlantern/lantern)下载。 **gnome** 下用 **chrome** 和 **iceweasel** 都可以连外网；但在 **xfce** 下却无法使用 **chrome** 连接，好在系统自带的 **iceweasel** 是可以用的。
+其中 **google-chrome-stable_current_amd64.deb** 需要到[ lantern 官网](https://github.com/getlantern/lantern)下载。
 
 **VirtualBox增强功能安装（虚拟机）**
 
@@ -127,9 +127,9 @@ category: 笔记
 
 ### 3. Linux 使用问题
 
-**chmod命令没效果**
-这是因为文件在windows的ntfs分区上，不支持Ｌinux下的用户permission等特性，需要将文件拷贝至ext分区上。
+** chmod 命令没效果**
+这是因为文件在 windows 的 ntfs 分区上，不支持 Ｌinux 下的用户 permissions 等特性，需要将文件拷贝至 ext 分区上。
 
 **右键菜单没有 open in terminal 选项**
+安装 caja-open-terminal ，`sudo apt-get install caja-open-terminal` 。
 
-    sudo apt-get install caja-open-terminal
