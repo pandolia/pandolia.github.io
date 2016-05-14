@@ -168,7 +168,7 @@ function success() {
     if (ipic) {
         tbBoard.cellPadding  = "0";
     }
-    infotag.innerHTML = "Conglatorations!";
+    infotag.innerHTML = "Conglaturations!";
 }
 
 
