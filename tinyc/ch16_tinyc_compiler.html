@@ -546,7 +546,7 @@ chmod u+x release/tcc release/pysimulate
 <span class="nb">echo</span> <span class="s2">&quot;export PATH=\$PATH:</span><span class="nv">$PWD</span><span class="s2">/release&quot;</span> &gt;&gt; ~/.bashrc
 </pre></div>
 </div>
-<p>在终端输入 <strong>bash build.sh</strong> 将编译生成 TinyC 前端 tcc-frontend 、库文件 libtio.a ，并放在 release 目录下，同时将 macro.inc, pysim.py, pysimulate, tcc 这四个文件拷贝至 release 目录，最后，将 release 目录输出到 PATH 环境变量中。现在，在终端输入 tcc filename.c 就可以利用 TinyC 编译成可执行程序了，而输入 pysimulate filename.asm -da 则可以用 Pcode 模拟器单步调试中间代码 Pcode 了。</p>
+<p>在终端输入 <strong>source build.sh</strong> 将编译生成 TinyC 前端 tcc-frontend 、库文件 libtio.a ，并放在 release 目录下，同时将 macro.inc, pysim.py, pysimulate, tcc 这四个文件拷贝至 release 目录，最后，将 release 目录输出到 PATH 环境变量中。现在，在终端输入 tcc filename.c 就可以利用 TinyC 编译成可执行程序了，而输入 pysimulate filename.asm -da 则可以用 Pcode 模拟器单步调试中间代码 Pcode 了。</p>
 <p>让我们来测试一下第一章的示例代码 <a class="reference download internal" href="downloads/test5.c"><tt class="xref download docutils literal"><span class="pre">test.c</span></tt></a> 吧，将其放在当前目录，然后在终端输入 tcc test.c ，将生成一个 test-c-build 目录，此目录中包含了中间代码文件 test.asm 、函数定义宏文件 test.inc 、目标文件 test.o 、最终的可执行文件 test 。可以输入 test-c-build/test 来运行可执行文件，也可以输入 pysimulate test-c-build/test.asm -da 用 Pcode 模拟器单步调试中间代码。</p>
 <p>脚本文件 tcc 首先调用 tcc-frontend 将输入文件（假设为 test.c ）编译为 test.asm 和 test.inc ，然后调用 nasm ，将 test.asm 、 test.inc 和 macro.inc 三个文件一起汇编成 test.o ，最后调用 ld 将 test.o 和 libtio.a 一起链接为最终的可执行程序 test 。 tcc 的内容如下：</p>
 <div class="highlight-bash"><div class="highlight"><pre><span class="c">#!/usr/bin/env bash</span>
