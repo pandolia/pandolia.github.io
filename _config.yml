@@ -20,6 +20,8 @@ navigation:
   url: /bookmark.html
 - text: TinyC
   url: /tinyc
+- text: Slide-Puzzle
+  url: /slidepuzzle
 - text: 简书
   url: http://www.jianshu.com/users/46fd9a28f80c/latest_articles
 - text: 本站源码
