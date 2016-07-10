@@ -60,16 +60,14 @@ category: 笔记
     ... # 在 root   ALL=(ALL:ALL) ALL 的后面加入：
     user    ALL=(ALL:ALL) ALL
 
+**笔记本电脑安装 wifi ：**
+
+    $ apt-get update && apt-get install firmware-iwlwifi
+    $ modprobe -r iwlwifi; modprobe iwlwifi
+
 **中文输入：**
 
     $ apt-get install ibus ibus-sunpinyin
-    $ nano ~/.bashrc
-    ... # 添加以下命令:
-    export GTK_IM_MODULE=ibus
-    export XMODIFIERS=@im=ibus
-    export QT_IM_MODULE=ibus
-
-之后需要设置输入法切换快捷键， **xfce** 下可以很快找到输入法管理程序，但 **gnome** 下藏的很隐蔽，在 settings --> keyboard --> typing --> input source 里面设置。
 
 **开发工具：**
 
@@ -89,7 +87,7 @@ category: 笔记
     $ /etc/init.d/apache2 -k restart
     
 
-注意安装 **build-essential** 时，由于系统自带的 **libc** 包和源中的版本不一致，会导致冲突，必须使用 **aptitude** 命令安装，安装过程中根据提示对 **libc** 进行 **downgrade** ，之后才能正常安装。
+注意安装 **build-essential** 时，由于系统自带的 **libc** 包和源中的版本不一致，可能会导致冲突，必须使用 **aptitude** 命令安装，安装过程中根据提示对 **libc** 进行 **downgrade** ，之后才能正常安装。
 
 **ruby和jekyll安装：**
 
@@ -127,9 +125,18 @@ category: 笔记
 
 ### 3. Linux 使用问题
 
-** chmod 命令没效果**
+**chmod 命令没效果**
 这是因为文件在 windows 的 ntfs 分区上，不支持 Ｌinux 下的用户 permissions 等特性，需要将文件拷贝至 ext 分区上。
 
 **右键菜单没有 open in terminal 选项**
 安装 caja-open-terminal ，`sudo apt-get install caja-open-terminal` 。
+
+**右键菜单中加入项： “在 sumblimetext 中打开当前目录”**
+
+Debian 8.4 Mate下，在 `~/.config/caja/scripts` 目录下，新建一个名为 `Open folder in sublimetext` 的文件，将其设置为可执行，并输入以下内容：
+
+    #!/bin/bash
+    "~/ProgramFiles/sublime_text_3/sublime_text" "${CAJA_SCRIPT_CURRENT_URI:7}"
+
+caja scripts 中用到的一些 variables ： <http://misawascriptkid.blogspot.com/2012/06/caja.html>
 
