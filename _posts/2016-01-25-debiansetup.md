@@ -89,6 +89,10 @@ category: 笔记
 
 注意安装 **build-essential** 时，由于系统自带的 **libc** 包和源中的版本不一致，可能会导致冲突，必须使用 **aptitude** 命令安装，安装过程中根据提示对 **libc** 进行 **downgrade** ，之后才能正常安装。
 
+**安装 nodejs ：**
+
+    $ apt-get install nodejs npm nodejs-legacy
+
 **ruby和jekyll安装：**
 
     $ apt-get install ruby ruby-dev
