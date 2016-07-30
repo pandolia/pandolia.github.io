@@ -38,6 +38,8 @@ layout: default
 - [Be a kernel hacker](https://www.linuxvoice.com/be-a-kernel-hacker)
 - [System V Application Binary Interface - DRAFT - 17](http://www.sco.com/developers/gabi/2003-12-17/contents.html)
 - [Ciro Santilli's blog](www.cirosantilli.com)
+- [Understanding python's with statement](http://effbot.org/zone/python-with-statement.htm)
+- [Host your python package using github on pypi](https://www.codementor.io/python/tutorial/host-your-python-package-using-github-on-pypi)
 
 ### Markdown
 - Markable  <https://markable.in>
