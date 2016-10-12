@@ -1,28 +1,41 @@
-# Welcome to Jekyll!
-#
-# This config file is meant for settings that affect your whole blog, values
-# which you are expected to set up once and rarely need to edit after that.
-# For technical reasons, this file is *NOT* reloaded automatically when you use
-# 'jekyll serve'. If you change this file, please restart the server process.
+# Jekyll configuration
 
-# Site settings
-title: Pandolia的博客
-description: > # this means to ignore newlines until "baseurl:"
-  编程 算法 汇编 静态博客
-baseurl:  # the subpath of your site, e.g. /blog
-github_username:  pandolia
+name: Pandolia's blog
 
-# customer global variable
-navigation:
-- text: 主页
-  url: /
-- text: 书签
-  url: /bookmark.html
-- text: TinyC
-  url: /tinyc
-- text: Slide-Puzzle
-  url: /slidepuzzle
-- text: 简书
-  url: http://www.jianshu.com/users/46fd9a28f80c/latest_articles
-- text: 本站源码
-  url: https://github.com/pandolia/pandolia.github.io
+description: It is written
+
+#author global variable
+author:
+    name: Pandolia
+    email: pandolia@yeah.net
+
+# url is currently only used only for the RSS feed in feed.xml
+url: 'http://pandolia.net/'
+
+# baseurl will often be '', but for a project page on gh-pages, it needs to
+# be the project name.
+# *** IMPORTANT: If your local "jekyll serve" throws errors change this to '' or
+#     run it like so: jekyll serve --baseurl=''
+baseurl: ''
+
+# This can be '' to hide the Github nav button
+github: ''
+
+# The 'comments' setting enables comments. You'll need to select either
+# disqus or duoshuo below to choose a comment system. Individual posts can
+# override 'comments' to disable on a post-by-post basis.
+comments: true
+
+# Set this to your duoshuo shortname to enable comments via duoshuo. Set to '' to disable duoshuo.
+duoshuo: 'pandolia'
+
+permalink: /:year/:month/:title
+paginate: 5
+
+highlighter: rouge
+markdown: kramdown
+gems: ['jekyll-paginate']
+
+exclude: ['README.md', 'LICENSE']
+
+excerpt_separator: <!--more-->

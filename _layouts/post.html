@@ -1,14 +1,39 @@
----
-layout: base
----
-<header class="post-header">
-  <h2 class="post-title" itemprop="name headline">{{ page.title }}</h2>
-  <p>by <a href="/{{ site.baseurl }}">{{ site.github_username }}</a></p>
-  <hr />
-</header>
-<div class="post-content" itemprop="articleBody">
-  {{ content }}
+{% include header.html %}
+
+<div class="container container-left">
+    <div class="row">
+        <div class="col-md-3 hidden-xs">
+            {% include sidebar.html %}
+        </div>
+        <div class="col-md-9">
+          <div class="article">
+            <div class="well">
+              <h2>{{ page.title }}</h2>
+              <p>{{ page.date | date: "%Y-%m-%d" }}</p>
+              <hr/>
+              <div class="post-content">{{ content }}</div>
+            </div>
+          </div>
+
+          <nav class="article-previous fn-clear">
+              {% if page.previous %}
+              <a class="btn btn-default" class="previous" href="{{ page.previous.url| prepend: site.baseurl | replace: '//', '/'  }}" style="float: left">&laquo;&nbsp;{{ page.previous.title | truncatewords:5 }}</a>
+              {% endif %}
+              {% if page.next %}
+              <a class="btn btn-default" class="next" href="{{ page.next.url| prepend: site.baseurl | replace: '//', '/'  }}" style="float: right">{{ page.next.title | truncatewords:5 }}&nbsp;&raquo;</a>
+              {% endif %}
+          </nav>
+
+          <br/><br/><br/>
+
+          {% if page.comments == true and site.duoshuo != '' %}
+            <commemts class="comment">
+              {% include duoshuo.html %}
+            </comments>
+          {% endif %}
+
+        </div>
+    </div>
 </div>
-<hr />
-<p>by <a href="/{{ site.baseurl }}">{{ site.github_username }}</a>.
-    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;如若转载，请注明出处</p>
+
+{% include footer.html %}

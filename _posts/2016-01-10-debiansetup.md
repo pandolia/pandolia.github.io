@@ -1,10 +1,14 @@
 ---
 layout: post
-title: Debian安装和使用
+title: Debian 安装和使用
 category: 笔记
+comments: True
+excerpt: 本文介绍 Debian 系统安装、常用软件的安装以及使用问题，以备后查。
 ---
 
-### 1. 系统安装
+系统安装
+==========
+
 **（1） 在Vitualbox中安装Debian8（xfce）**
 
 见 [mralphaville的Blog](https://mralphaville.wordpress.com/2015/05/01/how-to-install-debian-8-jessie-as-a-virtual-machine) 。
@@ -42,7 +46,11 @@ category: 笔记
 
 `grub.cfg`文件中的`linux (hd0,msdos5)/vmlinuz`和`initrd (hd0,msdos5)/initrd.gz`命令指定了内核引导程序文件所在的位置，Grub会加载这两个文件中的引导程序，之后引导程序会在硬盘的所有FAT32和EXT分区中搜索安装镜像iso文件，搜索到合法的安装镜像文件后会自动启动iso文件开始安装。
 
-### 2. 软件安装及配置
+---
+
+软件安装及配置
+================
+
 **配置源：**
 
     $ su
@@ -127,7 +135,10 @@ category: 笔记
 
 设置时区：`dpkg-reconfigure tzdata`，设置时间：`date -s 20160212; date -s 21:24:06`。
 
-### 3. Linux 使用问题
+---
+
+使用问题
+========
 
 **chmod 命令没效果**
 这是因为文件在 windows 的 ntfs 分区上，不支持 Ｌinux 下的用户 permissions 等特性，需要将文件拷贝至 ext 分区上。
