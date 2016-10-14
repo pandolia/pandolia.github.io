@@ -1,4 +1,4 @@
-Source code for [my blog](<http://jekyllrb.com>)
+Source code for [my blog](<http://pandolia.net>)
 ========================
 
 References:
