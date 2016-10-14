@@ -1,4 +1,4 @@
-Source code for my blog
+Source code for [my blog](<http://jekyllrb.com>)
 ========================
 
 References:
