@@ -27,6 +27,7 @@ permalink: pretty
 date_format: '%Y-%m-%d'
 logo: '/logo.png'
 excerpt_separator: <!--more-->
+lang: zh-CN
 
 # Pagination
 paginate: 5
