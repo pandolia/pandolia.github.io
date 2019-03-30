@@ -1,0 +1,396 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>第05章 手工编译 TinyC &mdash; 自己动手写编译器</title>
+    
+    <link rel="stylesheet" href="static/default.css" type="text/css" />
+    <link rel="stylesheet" href="static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/underscore.js"></script>
+    <script type="text/javascript" src="static/doctools.js"></script>
+    <link rel="top" title="自己动手写编译器" href="index.html" />
+    <link rel="next" title="第06章 编译器基本流程" href="ch6_compiler_overview.html" />
+    <link rel="prev" title="第04章 中间代码 Pcode (下)" href="ch4_Pcode_syntax_b.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="ch6_compiler_overview.html" title="第06章 编译器基本流程"
+             accesskey="N">next</a></li>
+        <li class="right" >
+          <a href="ch4_Pcode_syntax_b.html" title="第04章 中间代码 Pcode (下)"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">自己动手写编译器</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="tinyc">
+<h1>第05章 手工编译 TinyC<a class="headerlink" href="#tinyc" title="Permalink to this headline">¶</a></h1>
+<p>前面 3 章介绍了 TinyC 编译器的源程序 TinyC 和中间代码 Pcode 的语法结构，介绍了部分 Pcode 命令和 TinyC 语句的对应关系，本章介绍如何手工将 TinyC 源程序翻译成 Pcode ，因为只有我们对翻译的过程和细节都了如指掌后，才可能编写出程序来进行自动翻译。</p>
+<div class="section" id="id1">
+<h2>5.1 函数定义<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<p>函数定义的翻译在上一章其实讲的差不多了，函数的开头和结尾分别改成 FUNC 和 ENDFUNC 就可以了，FUNC 后接 &#64; + func_name + &#8221;:&#8221; ，若函数有参数，则在函数体的第一行加 arg + 参数列表，具体如下：</p>
+<p><strong>TinyC：</strong></p>
+<div class="highlight-c"><div class="highlight"><pre><span class="kt">int</span> <span class="nf">foo</span><span class="p">(</span><span class="kt">int</span> <span class="n">a</span><span class="p">,</span> <span class="kt">int</span> <span class="n">b</span><span class="p">)</span> <span class="p">{</span>
+    <span class="p">...</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Pcode：</strong></p>
+<div class="highlight-text"><div class="highlight"><pre>FUNC @foo:
+    arg a, b
+
+    ...
+ENDFUNC
+</pre></div>
+</div>
+</div>
+<div class="section" id="id2">
+<h2>5.2 变量声明、赋值语句、函数调用语句<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<p>变量声明直接将 TinyC 的 int 改成 var 就可以了。</p>
+<p>赋值语句的左边为变量名，右边为表达式，先将表达式转换成后缀表达式，再按顺序翻译相应的 Pcode ，最后在加一个 pop var_name：</p>
+<p><strong>赋值语句：</strong></p>
+<div class="highlight-c"><div class="highlight"><pre><span class="n">a</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">b</span> <span class="o">/</span> <span class="n">sum</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">8</span><span class="p">);</span>
+</pre></div>
+</div>
+<p><strong>逆波兰表达式：</strong></p>
+<div class="highlight-text"><div class="highlight"><pre>1 2 b * 5 8 sum / +
+</pre></div>
+</div>
+<p><strong>Pcode：</strong></p>
+<div class="highlight-text"><div class="highlight"><pre>push 1
+push 2
+push b
+mul
+push 5
+push 8
+$sum
+div
+add
+pop a
+</pre></div>
+</div>
+<p>注意对于自定义的函数，需在函数名前面加 $ 。</p>
+<p>可以看出对于复杂一点的表达式，人工将其转化成正确的后缀表达式是很困难的，必须借助计算机程序来做这件事了，这个就留给我们的 TinyC 编译器吧。</p>
+<p>函数调用语句其实在上面的表达式转换中就有了，先从左向右将参数入栈，再调用函数，若参数是一个表达式，则先将这个表达式翻译成 Pcode 。</p>
+<p><strong>TinyC:</strong></p>
+<div class="highlight-c"><div class="highlight"><pre><span class="n">foo</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">sum</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="mi">5</span><span class="p">));</span>
+</pre></div>
+</div>
+<p><strong>Pcode：</strong></p>
+<div class="highlight-text"><div class="highlight"><pre>push 1
+push a
+push b
+push 5
+$sum
+$foo
+pop
+</pre></div>
+</div>
+<p>注意最后的 pop 是为了将 foo 函数的返回值出栈的，因为这个值以后都不会再被使用到。如果函数调用是在表达式的内部，则不需要使用 pop 。</p>
+</div>
+<div class="section" id="id3">
+<h2>5.3 控制和循环语句<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
+<p>if 和 while 语句利用 jz 和 jmp 命令就可以实现，首先看 if 语句：</p>
+<p><strong>TinyC：</strong></p>
+<div class="highlight-c"><div class="highlight"><pre><span class="k">if</span> <span class="p">(</span><span class="n">a</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">print</span><span class="p">(</span><span class="s">&quot;a is a positive number&quot;</span><span class="p">);</span>
+<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+    <span class="n">print</span><span class="p">(</span><span class="s">&quot;a is a negative number&quot;</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Pcode：</strong></p>
+<div class="highlight-text"><div class="highlight"><pre>_beg_if:
+
+    ; test expression
+    push a
+    push 0
+    cmpgt
+
+jz _else
+
+    ; statements when test is true
+    print &quot;a is a positive number&quot;
+
+jmp _end_if
+_else:
+
+    ; statements when test is false
+    print &quot;a is a negative number&quot;
+
+_end_if:
+</pre></div>
+</div>
+<p>可以看出上述 Pcode 有固定的结构型式，将测试语句和两个执行体翻译成 Pcode 放到相对应的地方即可。</p>
+<p>再来看 while 语句：</p>
+<p><strong>TinyC：</strong></p>
+<div class="highlight-c"><div class="highlight"><pre><span class="k">while</span> <span class="p">(</span><span class="n">a</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">a</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Pcode：</strong></p>
+<div class="highlight-text"><div class="highlight"><pre>_beg_while:
+
+    ; test expression
+    push a
+    push 0
+    cmpgt
+
+jz _endwhile
+
+    ; statements when test is true
+    push a
+    push 1
+    sub
+    pop a
+
+jmp _beg_while
+_end_while:
+</pre></div>
+</div>
+<p>结构也很简单，将测试语句和执行体翻译成 Pcode 放到相对应的地方即可。</p>
+<p>continue 和 break 呢？将 continue 换成 jmp _beg_while，break 换成 jmp _end_while 就可以啦。</p>
+<p>对于有多个 if / while ，以及有嵌套 if / while 语句，就要注意对同一个 if / while 语句块使用同一个Label，不同的语句块的 Label 不能冲突，continue 和 break 要 jmp 到正确的 Label ，这些工作人工来做显然很困难也容易出错，留给我们的 TinyC 编译器吧。</p>
+</div>
+<div class="section" id="id4">
+<h2>5.4 实例<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h2>
+<p>最后让我们用第 2 章的典型程序来练习一下吧：</p>
+<p><strong>TinyC：</strong></p>
+<div class="highlight-c"><div class="highlight"><pre><span class="cp">#include &quot;for_gcc_build.hh&quot; </span><span class="c1">// only for gcc, TinyC will ignore it.</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kt">int</span> <span class="n">i</span><span class="p">;</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="k">while</span> <span class="p">(</span><span class="n">i</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">==</span> <span class="mi">3</span> <span class="o">||</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">5</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">continue</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">==</span> <span class="mi">8</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">break</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="n">print</span><span class="p">(</span><span class="s">&quot;%d! = %d&quot;</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">factor</span><span class="p">(</span><span class="n">i</span><span class="p">));</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">factor</span><span class="p">(</span><span class="kt">int</span> <span class="n">n</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">n</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">n</span> <span class="o">*</span> <span class="n">factor</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Pcode：</strong></p>
+<div class="highlight-text"><div class="highlight"><pre>; int main() {
+FUNC @main:
+
+    ; int i;
+    var i
+
+    ; i = 0;
+    push 0
+    pop i
+
+
+    ; while (i &lt; 10) {
+    _beg_while:
+
+        push i
+        push 10
+        cmplt
+
+    jz _end_while
+
+        ; i = i + 1;
+        push i
+        push 1
+        add
+        pop i
+
+        ; if (i == 3 || i == 5) {
+        _beg_if1:
+
+            push i
+            push 3
+            cmpeq
+            push i
+            push 5
+            cmpeq
+            or
+
+        jz _end_if1
+
+            ; continue;
+            jmp _beg_while
+
+        ; }
+        _end_if1:
+
+        ; if (i == 8) {
+        _beg_if2:
+
+            push i
+            push 8
+            cmpeq
+
+        jz _end_if2
+
+            ; break;
+            jmp _end_while
+
+        ; }
+        _end_if2:
+
+        ; print(&quot;%d! = %d&quot;, i, factor(i));
+        push i
+        push i
+        $factor
+        print &quot;%d! = %d&quot;
+
+    ; }
+    jmp _beg_while
+    _end_while:
+
+    ; return 0;
+    ret 0
+
+; }
+ENDFUNC
+
+; int factor(int n) {
+FUNC @factor:
+    arg n
+
+    ; if (n &lt; 2) {
+    _beg_if3:
+
+        push n
+        push 2
+        cmplt
+
+    jz _end_if3
+
+        ; return 1;
+        ret 1
+
+    ; }
+    _end_if3:
+
+    ; return n * factor(n - 1);
+    push n
+    push n
+    push 1
+    sub
+    $factor
+    mul
+    ret ~
+
+; }
+ENDFUNC
+</pre></div>
+</div>
+<p>够长把，写完后是不是觉得很累？将以上代码另存为 <a class="reference download internal" href="downloads/factor.asm"><tt class="xref download docutils literal"><span class="pre">factor.asm</span></tt></a>，存在终端当前目录（此目录中需有 pysim.py 文件），在终端中输入：</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>python pysim.py factor.asm -a
+</pre></div>
+</div>
+<p>注意以上最后的命令行参数是 <strong>-a</strong>。输出：</p>
+<div class="highlight-bash"><div class="highlight"><pre>1! <span class="o">=</span> 1
+2! <span class="o">=</span> 2
+4! <span class="o">=</span> 24
+6! <span class="o">=</span> 720
+7! <span class="o">=</span> 5040
+</pre></div>
+</div>
+<p>那个 <strong>-a</strong> 是干什么用的？让我们改成 <strong>-da</strong> 看看：</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>python pysim.py factor.asm -da
+</pre></div>
+</div>
+<p>终端内容如下：</p>
+<a class="reference internal image-reference" href="images/jfactor.png"><img alt="images/jfactor.png" src="images/jfactor.png" style="width: 979px; height: 205px;" /></a>
+<p><strong>图5.1 factor.asm程序单步执行界面</strong></p>
+<p>可以看到在模拟器自动在程序的第 1 、 2 行添加了 <strong>$main</strong> 和 <strong>exit ~</strong>，这就是 <strong>-a</strong> 和 <strong>-da</strong> 的作用。这样模拟器就会默认以 <strong>main</strong> 函数为入口了。</p>
+<p><strong>第 5 章完</strong></p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<h4><a href="index.html">首 页</a></h4>
+<h4>目 录</h4>
+  <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="ch1_overview.html">第01章 概 述</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch2_TinyC_syntax.html">第02章 源程序 TinyC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch3_Pcode_syntax_a.html">第03章 中间代码 Pcode (上)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch4_Pcode_syntax_b.html">第04章 中间代码 Pcode (下)</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">第05章 手工编译 TinyC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch6_compiler_overview.html">第06章 编译器基本流程</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch7_lexical_basic.html">第07章 词法分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch8_flex.html">第08章 用 flex 做词法分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch9_context_free_grammar.html">第09章 上下文无关语法及分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch10_top_down_parse.html">第10章 自顶向下分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch11_buttom_up_parse_a.html">第11章 自底向上分析 (上)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch12_buttom_up_parse_b.html">第12章 自底向上分析 (下)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch13_bison.html">第13章 用 bison 做语法分析</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch14_tinyc_frontend.html">第14章 TinyC 前端</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch15_tinyc_backend.html">第15章 TinyC 后端</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ch16_tinyc_compiler.html">第16章 TinyC 编译器</a></li>
+</ul>
+
+  <h4>上一章</h4>
+  <p class="topless"><a href="ch4_Pcode_syntax_b.html"
+                        title="previous chapter">第04章 中间代码 Pcode (下)</a></p>
+  <h4>下一章</h4>
+  <p class="topless"><a href="ch6_compiler_overview.html"
+                        title="next chapter">第06章 编译器基本流程</a></p>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="ch6_compiler_overview.html" title="第06章 编译器基本流程"
+             >next</a></li>
+        <li class="right" >
+          <a href="ch4_Pcode_syntax_b.html" title="第04章 中间代码 Pcode (下)"
+             >previous</a> |</li>
+        <li><a href="index.html">自己动手写编译器</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2015, pandolia.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

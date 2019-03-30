@@ -38,8 +38,6 @@ navigation_header:
   主页: /
   分类: /categories/
   链接: /links/
-  # github: https://github.com/pandolia/
-  # tinyc: https://pandolia.net/tinyc/
 
 # Footer nav
 navigation_footer:
