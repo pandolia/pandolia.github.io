@@ -1,39 +1,25 @@
-{% include header.html %}
+---
+layout: default
+---
 
-<div class="container container-left">
-    <div class="row">
-        <div class="col-md-3 hidden-xs">
-            {% include sidebar.html %}
-        </div>
-        <div class="col-md-9">
-          <div class="article">
-            <div class="well">
-              <h2>{{ page.title }}</h2>
-              <p>{{ page.date | date: "%Y-%m-%d" }}</p>
-              <hr/>
-              <div class="post-content">{{ content }}</div>
-            </div>
-          </div>
+{% include site-header.html %}
 
-          <nav class="article-previous fn-clear">
-              {% if page.previous %}
-              <a class="btn btn-default" class="previous" href="{{ page.previous.url| prepend: site.baseurl | replace: '//', '/'  }}" style="float: left">&laquo;&nbsp;{{ page.previous.title | truncatewords:5 }}</a>
-              {% endif %}
-              {% if page.next %}
-              <a class="btn btn-default" class="next" href="{{ page.next.url| prepend: site.baseurl | replace: '//', '/'  }}" style="float: right">{{ page.next.title | truncatewords:5 }}&nbsp;&raquo;</a>
-              {% endif %}
-          </nav>
+<main class="main  container">
 
-          <br/><br/><br/>
+  <article class="article  article--post  content  typeset">
 
-          {% if page.comments == true and site.duoshuo != '' %}
-            <commemts class="comment">
-              {% include duoshuo.html %}
-            </comments>
-          {% endif %}
+    <h1>{{ page.title }}</h1>
+    {% include post-meta.html %}
+    {{ content }}
 
-        </div>
-    </div>
-</div>
+    {% include nav-share.html %}
 
-{% include footer.html %}
+    {% include post-comments.html %}
+
+  </article>
+
+  {% if page.aside == true %}{% include site-aside.html %}{% endif %}
+
+</main>
+
+{% include site-footer.html %}

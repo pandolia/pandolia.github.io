@@ -1,41 +1,51 @@
-# Jekyll configuration
+# Set theme
+# theme: alembic-jekyll-theme
 
-name: Pandolia's blog
+# File excludes
+exclude:
+- README.md
+- Gemfile
+- Gemfile.lock
 
-description: It is written
+# Set plugins
+plugins:
+- jekyll-sitemap
+- jekyll-mentions
+- jekyll-paginate
+- jekyll-seo-tag
+- jekyll-redirect-from
+- jekyll-default-layout
+- jekyll-feed
+- jemoji
 
-#author global variable
-author:
-    name: Pandolia
-    email: pandolia@yeah.net
-
-# url is currently only used only for the RSS feed in feed.xml
-url: 'http://pandolia.net/'
-
-# baseurl will often be '', but for a project page on gh-pages, it needs to
-# be the project name.
-# *** IMPORTANT: If your local "jekyll serve" throws errors change this to '' or
-#     run it like so: jekyll serve --baseurl=''
+# Site settings
+url: 'https://pandolia.net'
 baseurl: ''
-
-# This can be '' to hide the Github nav button
-github: ''
-
-# The 'comments' setting enables comments. You'll need to select either
-# disqus or duoshuo below to choose a comment system. Individual posts can
-# override 'comments' to disable on a post-by-post basis.
-comments: true
-
-# Set this to your duoshuo shortname to enable comments via duoshuo. Set to '' to disable duoshuo.
-duoshuo: 'pandolia'
-
-permalink: /:year/:month/:title
-paginate: 5
-
-highlighter: rouge
-markdown: kramdown
-gems: ['jekyll-paginate']
-
-exclude: ['README.md', 'LICENSE']
-
+title: "Pandolia 的博客"
+description: 'Pandolia 的博客'
+permalink: pretty
+date_format: '%Y-%m-%d'
+logo: '/logo.png'
 excerpt_separator: <!--more-->
+
+# Pagination
+paginate: 5
+paginate_path: blog/page:num
+
+# Header nav
+navigation_header:
+  主页: /
+  分类: /categories/
+  链接: /links/
+  # github: https://github.com/pandolia/
+  # tinyc: https://pandolia.net/tinyc/
+
+# Footer nav
+navigation_footer:
+  返回顶部: '#top'
+
+# Collections
+collections:
+  posts:
+    output: true
+    feature_image: '/image/872.jpg'

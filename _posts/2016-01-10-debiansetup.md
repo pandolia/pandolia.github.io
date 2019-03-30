@@ -1,19 +1,22 @@
 ---
 layout: post
 title: Debian 安装和使用
-category: 笔记
-comments: True
-excerpt: 本文介绍 Debian 系统安装、常用软件的安装以及使用问题，以备后查。
+feature_image: "/image/866.jpg"
+category:
+    - Notes
 ---
 
-系统安装
-==========
+本文介绍 Debian 系统的安装和使用问题。
 
-**（1） 在Vitualbox中安装Debian8（xfce）**
+<!--more-->
+
+### 1、 系统安装
+
+**在Vitualbox中安装Debian8（xfce）**
 
 见 [mralphaville的Blog](https://mralphaville.wordpress.com/2015/05/01/how-to-install-debian-8-jessie-as-a-virtual-machine) 。
 
-**（2） 在Windows下通过U盘安装Debian 7.0 Wheezy**
+**在Windows下通过U盘安装Debian 7.0 Wheezy**
 
 首先通过 <http://www.debian.org/distrib/netinst>, 在 Tiny CDs, USB sticks, etc. 下面, 找到对应的下载列表, 如x86-64bit, 则选择：<http://ftp.nl.debian.org/debian/dists/wheezy/main/installer-amd64/current/images> 点击左侧列表里的 hd-media , 下载其中的boot.img.gz, 其他的都不用下。
 
@@ -25,7 +28,7 @@ excerpt: 本文介绍 Debian 系统安装、常用软件的安装以及使用问
 
 然后将电脑设置为U盘启动, 就可以看到Debian的安装界面了。
 
-**（3） 用Grub通过硬盘安装Debian8.4.0**
+**用Grub通过硬盘安装Debian8.4.0**
 
 电脑中已经安装了Win7和Debian7双系统，用Grub启动。则可以用Grub从硬盘安装Debian8。
 
@@ -46,10 +49,7 @@ excerpt: 本文介绍 Debian 系统安装、常用软件的安装以及使用问
 
 `grub.cfg`文件中的`linux (hd0,msdos5)/vmlinuz`和`initrd (hd0,msdos5)/initrd.gz`命令指定了内核引导程序文件所在的位置，Grub会加载这两个文件中的引导程序，之后引导程序会在硬盘的所有FAT32和EXT分区中搜索安装镜像iso文件，搜索到合法的安装镜像文件后会自动启动iso文件开始安装。
 
----
-
-软件安装及配置
-================
+### 2、 软件安装及配置
 
 **配置源：**
 
@@ -135,10 +135,7 @@ excerpt: 本文介绍 Debian 系统安装、常用软件的安装以及使用问
 
 设置时区：`dpkg-reconfigure tzdata`，设置时间：`date -s 20160212; date -s 21:24:06`。
 
----
-
-使用问题
-========
+### 3、 使用问题
 
 **chmod 命令没效果**
 这是因为文件在 windows 的 ntfs 分区上，不支持 Ｌinux 下的用户 permissions 等特性，需要将文件拷贝至 ext 分区上。
