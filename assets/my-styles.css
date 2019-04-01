@@ -14,7 +14,11 @@ body main div section ul li article h2 a {
     margin-bottom: 1rem;
 }
 .typeset h1 {
-    font-size: 2.0rem
+    font-size: 2.0rem;
+}
+section.typeset h2 {
+    font-size: 1.5rem;
+    margin-bottom: 0;
 }
 article.typeset ul li, article.typeset ol li {
     font-size: 0.8rem;
