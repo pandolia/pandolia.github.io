@@ -3,7 +3,7 @@ title: 给 antd table 增加自动合并上一行的功能
 layout: post
 feature_image: "/image/898.jpg"
 category:
-    - Article
+    - Front-end
 ---
 
 数据库查询时经常会使用到 group by 查询，对于此类查询返回的结果列表，用户往往会期望显示出来的表格能够合并 group by 字段对应的列。比如，对于下面的数据，期望 Department 和 Role 列能合并。

@@ -3,7 +3,7 @@ title: IIS 下申请、部署及自动更新免费 SSL 证书
 layout: post
 feature_image: "/image/877.jpg"
 category:
-    - Article
+    - Maintenance
 ---
 
 网站部署 HTTPS ，可以对浏览器和服务器之间的通讯数据进行加密，防止敏感信息（如：信用卡卡号、密码等）被中间攻击者窃取或篡改，防止网页内容被运行商或中间攻击者注入广告。此外， HTTPS 网站在搜索引擎中的排名也会比同等的 HTTP 网站更高。

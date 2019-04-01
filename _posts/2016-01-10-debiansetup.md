@@ -3,7 +3,7 @@ layout: post
 title: Debian 安装和使用
 feature_image: "/image/866.jpg"
 category:
-    - Note
+    - Maintenance
 ---
 
 本文介绍 Debian 系统的安装和使用问题。

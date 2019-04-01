@@ -1,8 +1,8 @@
-const version = '20190331190247';
+const version = '20190401092138';
 const cacheName = `static::${version}`;
 
 const buildContentBlob = () => {
-  return ["/article/2019/03/31/antd-table-with-auto-merge-above/","/article/2019/03/05/letsencrypt-win-simple/","/article/2016/01/22/rop/","/note/2016/01/10/debiansetup/","/note/2016/01/05/vpn-howto/","/categories/","/","/links/","/manifest.json","/assets/search.json","/assets/styles.css","/redirects.json","/feed.xml","/sitemap.xml","/robots.txt","/logo.png", "/assets/default-offline-image.png", "/assets/scripts/fetch.js"
+  return ["/front-end/2019/03/31/antd-table-with-auto-merge-above/","/maintenance/2019/03/05/letsencrypt-win-simple/","/security/2016/01/22/rop/","/maintenance/2016/01/10/debiansetup/","/network/2016/01/05/vpn-howto/","/categories/","/","/links/","/manifest.json","/assets/search.json","/assets/styles.css","/redirects.json","/feed.xml","/sitemap.xml","/robots.txt","/logo.png", "/assets/default-offline-image.png", "/assets/scripts/fetch.js"
   ]
 }
 
