@@ -18,6 +18,9 @@ plugins:
 - jekyll-feed
 - jemoji
 
+# Site Destination
+destination: ../pandolia.net/
+
 # Site settings
 url: 'https://pandolia.net'
 baseurl: ''
