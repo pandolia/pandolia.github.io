@@ -1,1 +1,17 @@
-https://picsum.photos/1300/400?image=989
+https://picsum.photos/1300/400
+
+Lorem Picsum
+The Lorem Ipsum for photos.
+
+Easy to use, stylish placeholders
+Just add your desired image size (width & height) after our URL, and you'll get a random image.
+https://picsum.photos/200/300
+
+To get a square image, just add the size.
+https://picsum.photos/200
+
+Specific Image
+Get a specific image by adding /id/{image} to the start of the url.
+https://picsum.photos/id/237/200/300
+
+You can find a list of all the images here https://picsum.photos/images.

@@ -105,3 +105,120 @@ WinRAR\Rar.exe a -r -hpPASSWORD destination.rar source_file_or_directory
 REM Unzip:
 WinRar\Rar.exe x -hpPASSWORD source.rar destination_directory
 ```
+
+七、 batch 文件常见变量、代码
+
+```batch
+REM 本脚本所在目录
+%~dp0
+
+REM 所有命令行参数
+%*
+
+REM 第 1 、 2 、 3 个参数
+%1 %2 %2
+
+REM 判断第一个参数是否为空，一定要用中括号括起来，否则当参数内有空格时会报语法错误
+if [%1] == [] (
+    echo xx
+    goto :eof
+)
+
+REM 判断变量是否为空，一定要打开延迟展开，否则变量内有空格时也会报语法错误
+setlocal EnableDelayedExpansion
+if "!port!" == "" (
+    set port=18974
+)
+
+REM goto 的标签前面要加冒号， :eof 代表文件结尾
+goto :label
+    echo xx
+:lable
+    echo yy
+```
+
+八、 PowerShell 常见代码
+
+```powershell
+# 函数及参数定义
+
+function main {
+Param(
+    [Parameter(Mandatory=$False, Position=1)]
+    [String]
+    $op,
+    [Parameter(Mandatory=$False, ValueFromRemainingArguments=$True, Position=2)]
+    [String[]]
+    $argv
+)    
+    switch ($op) {
+        'echo' { Write-Host $argv }
+        
+        'show-env' { node src\common\index.js --verbose $argv }
+
+        'start' { node src/index.js $argv }
+
+        'dev' { nodemon -w src src/index.js $argv }
+
+        'test' { node node_modules\mocha\bin\_mocha test\index.js $argv }
+
+        default {
+            if ([IO.File]::Exists("cli\$op.js")) {
+                node "cli\$op.js" $argv
+                break
+            }
+            Write-Host "Unrecognized command: $op"
+        }
+    }
+}
+
+main echo hello
+main start
+main test
+
+# 函数内部获取所有参数：
+$args
+
+# 将参数展开传递给另一个函数
+function func1 {
+    $a = $args
+    func2 @a     # 这里不能用 func2 $args 或 @args ，否则 func2 只会收到一个参数
+}
+
+# 判断路径、文件、目录是否存在，后面两个函数有 bug ，请勿使用
+Test-Path $pathName
+[IO.Directory]::Exists($dirName)
+[IO.File]::Exists($dirName)
+
+# powershell 启动时自动加载的文件：
+$PSHome\profile.ps1
+C:\Windows\System32\WindowsPowerShell\v1.0\profile.ps1
+
+# 导入模块， -Force 表示强制重新加载，此 Cmdlet v5.0 以上才能用
+Import-Module .\xx.ps1 -Force
+
+# 打印文件内容：
+Get-Content xxx.log -Encoding utf8
+
+# cmd 下运行命令（多个命令可用分号分隔），注意命令一定要用双引号括起来，否则可能会出问题
+powershell -Command "cd ..; bin last-log"
+
+# powershell 下运行命令
+Invoke-Expression 'cd ..; python -c print(1)'
+
+# 获取当前脚本所在目录
+$PSScriptRoot
+```
+
+九、 将 powershell 脚本放到后台运行
+
+```powershell
+if ($Args.count -eq 0) {
+    Start-Process 'Powershell' """$PSCommandPath"" -hidden" -WindowStyle Hidden
+    return
+}
+
+while (True) {
+    ssh -NR 990:127.0.0.1:22 aliyun 2>&1 >>xx.log
+}
+```
