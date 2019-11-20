@@ -1,3 +1,6 @@
+body {
+    overflow-y: scroll;
+}
 body main div section ul li article h2 a {
     font-size: 1.5rem;
 }
