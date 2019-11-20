@@ -19,7 +19,7 @@ plugins:
 - jemoji
 
 # Site Destination
-destination: ../pandolia.net/
+destination: ../public/pandolia.net/
 
 # Site settings
 url: 'https://pandolia.net'
